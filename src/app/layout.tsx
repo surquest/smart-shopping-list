@@ -4,12 +4,12 @@ import { ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import theme from './theme';
 import ServiceWorkerRegistration from '@/components/ServiceWorkerRegistration';
+import InstallPrompt from '@/components/InstallPrompt';
 import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Smart Shopping List",
   description: "Progressive web app for managing your shopping list",
-  manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
@@ -39,6 +39,7 @@ export default function RootLayout({
           <ThemeProvider theme={theme}>
             <CssBaseline />
             <ServiceWorkerRegistration />
+            <InstallPrompt />
             {children}
           </ThemeProvider>
         </AppRouterCacheProvider>

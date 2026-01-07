@@ -1,10 +1,9 @@
 const CACHE_NAME = 'smart-shopping-list-v1';
 const urlsToCache = [
-  '/smart-shopping-list/',
-  '/smart-shopping-list/index.html',
-  '/smart-shopping-list/manifest.json',
-  '/smart-shopping-list/icon-192x192.png',
-  '/smart-shopping-list/icon-512x512.png',
+  './',
+  './manifest.webmanifest',
+  './icon-192x192.png',
+  './icon-512x512.png',
 ];
 
 self.addEventListener('install', (event) => {
