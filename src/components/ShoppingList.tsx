@@ -2,7 +2,8 @@ import React, { useState, useEffect, useMemo } from 'react';
 import {
   Box, List, ListItem, ListItemText, ListItemIcon, IconButton,
   Checkbox, TextField, Button, Paper, Typography, Divider, Stack,
-  Tooltip, useTheme, useMediaQuery
+  Tooltip, useTheme, useMediaQuery,
+  Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions,
 } from '@mui/material';
 import {
   DragDropContext, Droppable, Draggable, DropResult,
@@ -12,6 +13,7 @@ import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
 import AddIcon from '@mui/icons-material/Add';
 import ShareIcon from '@mui/icons-material/Share';
 import ClearAllIcon from '@mui/icons-material/ClearAll';
+import Snackbar, { SnackbarCloseReason } from '@mui/material/Snackbar';
 
 /**
  * Single shopping list item in application state
@@ -121,6 +123,11 @@ const ShoppingList: React.FC = () => {
 
   /** Controlled input value for new item */
   const [newItemText, setNewItemText] = useState('');
+  /** Dialog open state for clearing the list */
+  const [openClearDialog, setOpenClearDialog] = useState(false);
+
+  /** Snackbar open state for for copy success */
+  const [openSnackbar, setOpenSnackbar] = useState(false);
 
   /**
    * Prevents hydration mismatch:
@@ -214,12 +221,32 @@ const ShoppingList: React.FC = () => {
   };
 
   /**
-   * Clears entire shopping list after confirmation
+   * Open confirmation dialog to clear entire shopping list
    */
   const handleClearAll = () => {
-    if (window.confirm('Clear entire list?')) {
-      setItems([]);
+    setOpenClearDialog(true);
+  };
+
+  /** Confirm and clear all items */
+  const confirmClearAll = () => {
+    setItems([]);
+    setOpenClearDialog(false);
+  };
+
+  /** Cancel clearing the list */
+  const cancelClearAll = () => {
+    setOpenClearDialog(false);
+  };
+
+  /** Handle Snackbar close event */
+  const handleCloseSnackbar = (
+    event: React.SyntheticEvent<any> | Event,
+    reason?: SnackbarCloseReason
+  ) => {
+    if (reason === 'clickaway') {
+      return;
     }
+    setOpenSnackbar(false);
   };
 
   /**
@@ -310,7 +337,7 @@ const ShoppingList: React.FC = () => {
             <IconButton
               onClick={() => {
                 navigator.clipboard.writeText(window.location.href);
-                alert('URL Copied!');
+                setOpenSnackbar(true);
               }}
               color="primary"
             >
@@ -443,6 +470,27 @@ const ShoppingList: React.FC = () => {
             </List>
           </Box>
         )}
+
+        {/* Confirm Clear All Dialog */}
+        <Dialog open={openClearDialog} onClose={cancelClearAll}>
+          <DialogTitle>Clear entire list?</DialogTitle>
+          <DialogContent>
+            <DialogContentText>
+              This will permanently remove all items from your shopping list. This action cannot be undone.
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={cancelClearAll}>Cancel</Button>
+            <Button onClick={confirmClearAll} color="error" variant="contained">Clear All</Button>
+          </DialogActions>
+        </Dialog>
+
+        <Snackbar
+          open={openSnackbar}
+          autoHideDuration={5000}
+          onClose={handleCloseSnackbar}
+          message="This Snackbar will be dismissed in 5 seconds."
+        />
 
         {/* Empty state */}
         {items.length === 0 && (
