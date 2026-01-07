@@ -67,3 +67,35 @@ This app is configured to deploy to GitHub Pages automatically when changes are 
 ## License
 
 ISC
+
+## Docker (development)
+
+Build a development image and run the app inside a container while mounting your source code so changes are reflected immediately.
+
+PowerShell (Windows):
+
+```powershell
+# Build the development image
+docker build -t smart-shopping-list:dev .
+
+# Run the container (mount current folder, reuse host node_modules, forward port 3000)
+docker run --rm -it `
+-p "3000:3000" `
+-v "${PWD}:/app" `
+-v "${PWD}/node_modules:/app/node_modules" `
+-w /app `
+smart-shopping-list:dev sh -c "npm install && npm run dev"
+```
+
+Unix / WSL:
+
+```bash
+# Build the development image
+docker build -t smart-shopping-list:dev .
+
+# Run the container (mount current folder, anonymous node_modules volume, forward port 3000)
+docker run --rm -it -p 3000:3000 -v $(pwd):/app -v /app/node_modules -w /app \
+	--env NODE_ENV=development smart-shopping-list:dev sh -c "npm install && npm run dev"
+```
+
+Open http://localhost:3000 after the container starts. Stop the container with Ctrl+C.
