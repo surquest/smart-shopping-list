@@ -489,7 +489,7 @@ const ShoppingList: React.FC = () => {
           open={openSnackbar}
           autoHideDuration={5000}
           onClose={handleCloseSnackbar}
-          message="This Snackbar will be dismissed in 5 seconds."
+          message="Link copied to clipboard, you can share it now!"
         />
 
         {/* Empty state */}
