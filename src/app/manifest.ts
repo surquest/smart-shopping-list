@@ -1,5 +1,7 @@
 import { MetadataRoute } from 'next'
 
+export const dynamic = 'force-static';
+
 export default function manifest(): MetadataRoute.Manifest {
   const basePath = process.env.NODE_ENV === 'production' ? '/smart-shopping-list' : '';
   
