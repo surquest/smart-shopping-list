@@ -1,0 +1,24 @@
+{
+  "name": "Smart Shopping List",
+  "short_name": "Shopping List",
+  "description": "Progressive web app for managing your shopping list",
+  "start_url": "/smart-shopping-list/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#1976d2",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/smart-shopping-list/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/smart-shopping-list/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
