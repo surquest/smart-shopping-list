@@ -45,7 +45,7 @@ export default function ShoppingList() {
 
   const handleAddItem = (name: string) => {
     const newItem: ShoppingItem = {
-      id: Date.now().toString(),
+      id: crypto.randomUUID(),
       name,
       completed: false,
       createdAt: Date.now(),
