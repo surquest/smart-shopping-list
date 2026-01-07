@@ -15,6 +15,9 @@ export const metadata: Metadata = {
     statusBarStyle: "default",
     title: "Shopping List",
   },
+  icons: {
+    apple: "/icon-192x192.png",
+  }
 };
 
 export const viewport: Viewport = {
@@ -31,9 +34,6 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <head>
-        <link rel="apple-touch-icon" href="/icon-192x192.png" />
-      </head>
       <body>
         <AppRouterCacheProvider>
           <ThemeProvider theme={theme}>
