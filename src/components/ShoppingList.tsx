@@ -12,6 +12,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
 import AddIcon from '@mui/icons-material/Add';
 import ShareIcon from '@mui/icons-material/Share';
+import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 import ClearAllIcon from '@mui/icons-material/ClearAll';
 import Snackbar, { SnackbarCloseReason } from '@mui/material/Snackbar';
 
@@ -332,6 +333,16 @@ const ShoppingList: React.FC = () => {
               color="error"
             >
               <ClearAllIcon />
+            </IconButton>
+
+            <IconButton
+              onClick={() => {
+                const text = `Check out my shopping list: ${window.location.href}`;
+                window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+              }}
+              color="success"
+            >
+              <WhatsAppIcon />
             </IconButton>
 
             <IconButton
