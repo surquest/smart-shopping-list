@@ -4,6 +4,7 @@ import {
   Checkbox, TextField, Button, Paper, Typography, Divider, Stack,
   Tooltip, useTheme, useMediaQuery,
   Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions,
+  Menu, MenuItem,
 } from '@mui/material';
 import {
   DragDropContext, Droppable, Draggable, DropResult,
@@ -14,104 +15,16 @@ import AddIcon from '@mui/icons-material/Add';
 import ShareIcon from '@mui/icons-material/Share';
 import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 import ClearAllIcon from '@mui/icons-material/ClearAll';
+import MoreVertIcon from '@mui/icons-material/MoreVert';
 import Snackbar, { SnackbarCloseReason } from '@mui/material/Snackbar';
-
-/**
- * Single shopping list item in application state
- */
-interface ShoppingItem {
-  id: string;           // Unique client-side identifier
-  text: string;         // Item label
-  isPurchased: boolean; // Purchase status
-}
-
-/**
- * Compact representation stored in URL:
- * [purchasedFlag, text]
- */
-type SerializedItem = [number, string];
-
-/**
- * Generates short random IDs for list items.
- * Collision risk is acceptable for client-only state.
- */
-const generateItemId = () =>
-  Math.random().toString(36).slice(2, 7);
-
-/**
- * Encodes UTF-8 string to URL-safe Base64
- * (used to persist list state in query params)
- */
-const toBase64Url = (input: string) => {
-  const bytes = new TextEncoder().encode(input);
-  let binary = '';
-  bytes.forEach(byte => {
-    binary += String.fromCharCode(byte);
-  });
-
-  // Convert to URL-safe Base64
-  return btoa(binary)
-    .replace(/\+/g, '-')
-    .replace(/\//g, '_')
-    .replace(/=+$/, '');
-};
-
-/**
- * Decodes URL-safe Base64 back to UTF-8 string
- */
-const fromBase64Url = (input: string) => {
-  const normalized = input.replace(/-/g, '+').replace(/_/g, '/');
-  const padding =
-    normalized.length % 4 === 0
-      ? ''
-      : '='.repeat(4 - (normalized.length % 4));
-
-  const binary = atob(normalized + padding);
-  const bytes = new Uint8Array(binary.length);
-
-  for (let i = 0; i < binary.length; i += 1) {
-    bytes[i] = binary.charCodeAt(i);
-  }
-
-  return new TextDecoder().decode(bytes);
-};
-
-/**
- * Serializes items into a compact, shareable URL payload.
- * Returns null for empty list to keep URL clean.
- */
-const encodeItemsForUrl = (items: ShoppingItem[]) => {
-  if (items.length === 0) return null;
-
-  const payload = JSON.stringify(
-    items.map<SerializedItem>(item => [
-      item.isPurchased ? 1 : 0,
-      item.text,
-    ])
-  );
-
-  return toBase64Url(payload);
-};
-
-/**
- * Restores shopping items from URL query param.
- * IDs are regenerated since they are not persisted.
- */
-const decodeItemsFromUrl = (raw: string): ShoppingItem[] => {
-  try {
-    const parsed: SerializedItem[] =
-      JSON.parse(fromBase64Url(raw));
-
-    return parsed.map(([flag, text]) => ({
-      id: generateItemId(),
-      text,
-      isPurchased: flag === 1,
-    }));
-  } catch {
-    // Corrupt or invalid URL data
-    return [];
-  }
-};
+import {
+  ShoppingItem,
+  generateItemId,
+  encodeItemsForUrl,
+  decodeItemsFromUrl,
+  saveToIndexedDB,
+  loadFromIndexedDB,
+} from '../utils/shoppingListStorage';
 
 const ShoppingList: React.FC = () => {
   const theme = useTheme();
@@ -126,7 +39,17 @@ const ShoppingList: React.FC = () => {
   const [newItemText, setNewItemText] = useState('');
   /** Dialog open state for clearing the list */
   const [openClearDialog, setOpenClearDialog] = useState(false);
+  /** Menu anchor element and open state */
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const openMenu = Boolean(anchorEl);
+  const handleMenuClick = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
 
+  /** 
   /** Snackbar open state for for copy success */
   const [openSnackbar, setOpenSnackbar] = useState(false);
 
@@ -140,21 +63,35 @@ const ShoppingList: React.FC = () => {
    * Initial load:
    * - mark component as mounted
    * - read shopping list state from URL (if present)
+   * - fall back to IndexedDB if URL is empty
+   * - ensure sync between URL and IndexedDB
    */
   useEffect(() => {
     setIsMounted(true);
 
-    const params = new URLSearchParams(window.location.search);
-    const encodedData = params.get('data');
+    const init = async () => {
+      const params = new URLSearchParams(window.location.search);
+      const encodedData = params.get('data');
 
-    if (encodedData) {
-      setItems(decodeItemsFromUrl(encodedData));
-    }
+      if (encodedData) {
+        const urlItems = decodeItemsFromUrl(encodedData);
+        setItems(urlItems);
+        // Sync URL data to IndexedDB priority is given to URL (sharing scenario)
+        await saveToIndexedDB(urlItems);
+      } else {
+        // Try load from IndexedDB
+        const dbItems = await loadFromIndexedDB();
+        if (dbItems && dbItems.length > 0) {
+          setItems(dbItems);
+        }
+      }
+    };
+    init();
   }, []);
 
   /**
-   * Persist state to URL on every change.
-   * Enables sharing the list via link.
+   * Persist state to URL and IndexedDB on every change.
+   * Enables sharing the list via link and offline storage.
    */
   useEffect(() => {
     if (!isMounted) return;
@@ -172,6 +109,9 @@ const ShoppingList: React.FC = () => {
 
     // Update URL without navigation
     window.history.replaceState({}, '', url.toString());
+
+    // Sync to IndexedDB
+    saveToIndexedDB(items);
   }, [items, isMounted]);
 
   /** Derived list of items not yet purchased */
@@ -322,38 +262,72 @@ const ShoppingList: React.FC = () => {
           mb={2}
         >
           <Typography variant="h5" fontWeight="bold">
-            🛒 Shopping List
+            Shopping List
           </Typography>
-
           {/* Clear & Share actions */}
           <Stack direction="row" spacing={0.5}>
             <IconButton
-              onClick={handleClearAll}
-              disabled={items.length === 0}
-              color="error"
+              id="action-menu-button"
+              aria-controls={openMenu ? 'action-menu' : undefined}
+              aria-haspopup="true"
+              aria-expanded={openMenu ? 'true' : undefined}
+              onClick={handleMenuClick}
+              edge="end"
             >
-              <ClearAllIcon />
+              <MoreVertIcon />
             </IconButton>
-
-            <IconButton
-              onClick={() => {
-                const text = `Check out my shopping list: ${window.location.href}`;
-                window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+            <Menu
+              id="action-menu"
+              aria-labelledby="action-menu-button"
+              anchorEl={anchorEl}
+              open={openMenu}
+              onClose={handleMenuClose}
+              anchorOrigin={{
+                vertical: 'bottom',
+                horizontal: 'right',
               }}
-              color="success"
-            >
-              <WhatsAppIcon />
-            </IconButton>
-
-            <IconButton
-              onClick={() => {
-                navigator.clipboard.writeText(window.location.href);
-                setOpenSnackbar(true);
+              transformOrigin={{
+                vertical: 'top',
+                horizontal: 'right',
               }}
-              color="primary"
             >
-              <ShareIcon />
-            </IconButton>
+              <MenuItem
+                onClick={() => {
+                  handleMenuClose();
+                  handleClearAll();
+                }}
+                disabled={items.length === 0}
+              >
+                <ListItemIcon>
+                  <ClearAllIcon fontSize="small" />
+                </ListItemIcon>
+                <ListItemText>Clear List</ListItemText>
+              </MenuItem>
+              <MenuItem
+                onClick={() => {
+                  handleMenuClose();
+                  const text = `Check out my shopping list: ${window.location.href}`;
+                  window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+                }}
+              >
+                <ListItemIcon>
+                  <WhatsAppIcon fontSize="small" />
+                </ListItemIcon>
+                <ListItemText>Share on WhatsApp</ListItemText>
+              </MenuItem>
+              <MenuItem
+                onClick={() => {
+                  handleMenuClose();
+                  navigator.clipboard.writeText(window.location.href);
+                  setOpenSnackbar(true);
+                }}
+              >
+                <ListItemIcon>
+                  <ShareIcon fontSize="small" />
+                </ListItemIcon>
+                <ListItemText>Copy Link</ListItemText>
+              </MenuItem>
+            </Menu>
           </Stack>
         </Stack>
 
