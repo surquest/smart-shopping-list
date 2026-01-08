@@ -45,6 +45,10 @@ const ShoppingList: React.FC = () => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingText, setEditingText] = useState('');
 
+  /** Item Menu state */
+  const [itemMenuAnchorEl, setItemMenuAnchorEl] = useState<null | HTMLElement>(null);
+  const [itemMenuId, setItemMenuId] = useState<string | null>(null);
+
   /** Dialog open state for clearing the list */
   const [openClearDialog, setOpenClearDialog] = useState(false);
   /** Menu anchor element and open state */
@@ -293,6 +297,24 @@ const ShoppingList: React.FC = () => {
     }
   };
 
+  /** Item Menu Handlers */
+  const handleItemMenuOpen = (event: React.MouseEvent<HTMLElement>, id: string) => {
+    setItemMenuAnchorEl(event.currentTarget);
+    setItemMenuId(id);
+  };
+
+  const handleItemMenuClose = () => {
+    setItemMenuAnchorEl(null);
+    setItemMenuId(null);
+  };
+
+  const handleDeleteItem = () => {
+    if (itemMenuId) {
+      setItems(prev => prev.filter(i => i.id !== itemMenuId));
+    }
+    handleItemMenuClose();
+  };
+
   // Avoid rendering until client-only APIs are safe
   if (!isMounted) return null;
 
@@ -397,18 +419,30 @@ const ShoppingList: React.FC = () => {
           component="form"
           onSubmit={handleAddItem}
           mb={3}
+          alignItems="stretch"
         >
           <TextField
             fullWidth
+            size="small"
             value={newItemText}
-            onChange={e => setNewItemText(e.target.value)}
+            onChange={(e) => setNewItemText(e.target.value)}
             placeholder="Add item..."
             inputRef={newItemInputRef}
+            sx={{
+              '& .MuiInputBase-root': {
+                height: 48,
+              },
+            }}
           />
+
           <Button
             variant="contained"
             type="submit"
             disabled={!newItemText.trim()}
+            sx={{
+              minWidth: 48,
+              height: 48,
+            }}
           >
             <AddIcon />
           </Button>
@@ -437,6 +471,7 @@ const ShoppingList: React.FC = () => {
                           flexWrap: 'nowrap',
                           alignItems: 'center',
                           pr: 1,
+                          pl: 0,
                         }}
                       >
                         {/* Drag handle */}
@@ -492,26 +527,38 @@ const ShoppingList: React.FC = () => {
                           }
                         />
 
-                        <Stack direction="row" alignItems="center" flexShrink={0}>
-                          <IconButton
-                            onClick={() => handleUpdateQuantity(item.id, -1)}
+                        <Stack
+                          direction="row"
+                          alignItems="center"
+                          flexShrink={0}
+                        >
+                          <Stack
+                            direction="row"
+                            alignItems="center"
+                            flexShrink={0}
+                            sx={{ 
+                              backgroundColor: theme.palette.background.paper, 
+                              borderRadius: 1 
+                            }}
                           >
-                            <RemoveIcon />
-                          </IconButton>
-                          <Typography variant="body2" sx={{ mx: 1 }}>
-                            {item.quantity || 1}
-                          </Typography>
+                            <IconButton
+                              onClick={() => handleUpdateQuantity(item.id, -1)}
+                            >
+                              <RemoveIcon />
+                            </IconButton>
+                            <Typography variant="body2" sx={{ mx: 1 }}>
+                              {item.quantity || 1}
+                            </Typography>
+                            <IconButton
+                              onClick={() => handleUpdateQuantity(item.id, 1)}
+                            >
+                              <AddIcon />
+                            </IconButton>
+                          </Stack>
                           <IconButton
-                            onClick={() => handleUpdateQuantity(item.id, 1)}
+                            onClick={(e) => handleItemMenuOpen(e, item.id)}
                           >
-                            <AddIcon />
-                          </IconButton>
-                          <IconButton
-                            onClick={() =>
-                              setItems((prev) => prev.filter((i) => i.id !== item.id))
-                            }
-                          >
-                            <DeleteIcon />
+                            <MoreVertIcon />
                           </IconButton>
                         </Stack>
                       </ListItem>
@@ -540,6 +587,7 @@ const ShoppingList: React.FC = () => {
                     flexWrap: 'nowrap',
                     alignItems: 'center',
                     pr: 1,
+                    pl: 0,
                   }}
                 >
                   {/* Spacer to align with drag handle */}
@@ -608,12 +656,9 @@ const ShoppingList: React.FC = () => {
                       <AddIcon />
                     </IconButton>
                     <IconButton
-                      disabled={true}
-                      onClick={() =>
-                        setItems((prev) => prev.filter((i) => i.id !== item.id))
-                      }
+                      onClick={(e) => handleItemMenuOpen(e, item.id)}
                     >
-                      <DeleteIcon />
+                      <MoreVertIcon />
                     </IconButton>
                   </Stack>
                 </ListItem>
@@ -621,6 +666,20 @@ const ShoppingList: React.FC = () => {
             </List>
           </Box>
         )}
+
+        {/* Item Action Menu */}
+        <Menu
+          anchorEl={itemMenuAnchorEl}
+          open={Boolean(itemMenuAnchorEl)}
+          onClose={handleItemMenuClose}
+        >
+          <MenuItem onClick={handleDeleteItem}>
+            <ListItemIcon>
+              <DeleteIcon fontSize="small" />
+            </ListItemIcon>
+            <ListItemText>Delete</ListItemText>
+          </MenuItem>
+        </Menu>
 
         {/* Confirm Clear All Dialog */}
         <Dialog open={openClearDialog} onClose={cancelClearAll}>
