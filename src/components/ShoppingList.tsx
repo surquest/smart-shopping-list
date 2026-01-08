@@ -463,7 +463,12 @@ const ShoppingList: React.FC = () => {
                         }}
                       >
                         {/* Drag handle */}
-                        <ListItemIcon {...provided.dragHandleProps}>
+                        <ListItemIcon 
+                          sx={{ 
+                            minWidth: 32,
+                           }}
+                          { ...provided.dragHandleProps }
+                        >
                           <DragIndicatorIcon />
                         </ListItemIcon>
 
@@ -529,7 +534,9 @@ const ShoppingList: React.FC = () => {
                   secondaryAction={
                     <Stack direction="row" alignItems="center">
                       <IconButton
+                        disabled={true}
                         onClick={() => handleUpdateQuantity(item.id, -1)}
+                        
                       >
                         <RemoveIcon />
                       </IconButton>
@@ -537,11 +544,13 @@ const ShoppingList: React.FC = () => {
                         {item.quantity || 1}
                       </Typography>
                       <IconButton
+                        disabled={true}
                         onClick={() => handleUpdateQuantity(item.id, 1)}
                       >
                         <AddIcon />
                       </IconButton>
                       <IconButton
+                        disabled={true}
                         onClick={() =>
                           setItems(prev =>
                             prev.filter(i => i.id !== item.id)
