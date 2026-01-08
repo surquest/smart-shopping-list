@@ -430,85 +430,90 @@ const ShoppingList: React.FC = () => {
                         ref={provided.innerRef}
                         {...provided.draggableProps}
                         divider
-                        secondaryAction={
-                          <Stack direction="row" alignItems="center">
-                            <IconButton
-                              onClick={() => handleUpdateQuantity(item.id, -1)}
-                            >
-                              <RemoveIcon />
-                            </IconButton>
-                            <Typography variant="body2" sx={{ mx: 1 }}>
-                              {item.quantity || 1}
-                            </Typography>
-                            <IconButton
-                              onClick={() => handleUpdateQuantity(item.id, 1)}
-                            >
-                              <AddIcon />
-                            </IconButton>
-                            <IconButton
-                              onClick={() =>
-                                setItems(prev =>
-                                  prev.filter(i => i.id !== item.id)
-                                )
-                              }
-                            >
-                              <DeleteIcon />
-                            </IconButton>
-                          </Stack>
-                        }
                         sx={{
                           bgcolor: snapshot.isDragging
                             ? 'background.paper'
                             : 'inherit',
+                          flexWrap: 'nowrap',
+                          alignItems: 'center',
+                          pr: 1,
                         }}
                       >
                         {/* Drag handle */}
-                        <ListItemIcon 
-                          sx={{ 
+                        <ListItemIcon
+                          sx={{
                             minWidth: 32,
-                           }}
-                          { ...provided.dragHandleProps }
+                          }}
+                          {...provided.dragHandleProps}
                         >
                           <DragIndicatorIcon />
                         </ListItemIcon>
 
                         <Checkbox
                           checked={item.isPurchased}
-                          onChange={() =>
-                            handleTogglePurchase(item.id)
-                          }
+                          onChange={() => handleTogglePurchase(item.id)}
                         />
 
                         <ListItemText
+                          sx={{
+                            flexGrow: 1,
+                            mr: 1,
+                            overflow: 'hidden',
+                          }}
                           primary={
                             editingId === item.id ? (
                               <TextField
                                 value={editingText}
-                                onChange={e => setEditingText(e.target.value)}
+                                onChange={(e) => setEditingText(e.target.value)}
                                 onBlur={handleSaveEdit}
-                                onKeyDown={e => {
+                                onKeyDown={(e) => {
                                   if (e.key === 'Enter') handleSaveEdit();
                                 }}
                                 autoFocus
                                 fullWidth
                                 variant="standard"
                                 size="small"
-                                onClick={e => e.stopPropagation()}
+                                onClick={(e) => e.stopPropagation()}
                               />
                             ) : (
-                              <span
+                              <Typography
+                                variant="body1"
+                                component="div"
                                 onDoubleClick={() => handleStartEdit(item)}
-                                style={{
+                                sx={{
                                   cursor: 'text',
-                                  width: '100%',
-                                  display: 'block',
+                                  wordBreak: 'break-word',
+                                  whiteSpace: 'pre-wrap',
                                 }}
                               >
                                 {item.text}
-                              </span>
+                              </Typography>
                             )
                           }
                         />
+
+                        <Stack direction="row" alignItems="center" flexShrink={0}>
+                          <IconButton
+                            onClick={() => handleUpdateQuantity(item.id, -1)}
+                          >
+                            <RemoveIcon />
+                          </IconButton>
+                          <Typography variant="body2" sx={{ mx: 1 }}>
+                            {item.quantity || 1}
+                          </Typography>
+                          <IconButton
+                            onClick={() => handleUpdateQuantity(item.id, 1)}
+                          >
+                            <AddIcon />
+                          </IconButton>
+                          <IconButton
+                            onClick={() =>
+                              setItems((prev) => prev.filter((i) => i.id !== item.id))
+                            }
+                          >
+                            <DeleteIcon />
+                          </IconButton>
+                        </Stack>
                       </ListItem>
                     )}
                   </Draggable>
@@ -531,82 +536,86 @@ const ShoppingList: React.FC = () => {
                 <ListItem
                   key={item.id}
                   divider
-                  secondaryAction={
-                    <Stack direction="row" alignItems="center">
-                      <IconButton
-                        disabled={true}
-                        onClick={() => handleUpdateQuantity(item.id, -1)}
-                        
-                      >
-                        <RemoveIcon />
-                      </IconButton>
-                      <Typography variant="body2" sx={{ mx: 1 }}>
-                        {item.quantity || 1}
-                      </Typography>
-                      <IconButton
-                        disabled={true}
-                        onClick={() => handleUpdateQuantity(item.id, 1)}
-                      >
-                        <AddIcon />
-                      </IconButton>
-                      <IconButton
-                        disabled={true}
-                        onClick={() =>
-                          setItems(prev =>
-                            prev.filter(i => i.id !== item.id)
-                          )
-                        }
-                      >
-                        <DeleteIcon />
-                      </IconButton>
-                    </Stack>
-                  }
+                  sx={{
+                    flexWrap: 'nowrap',
+                    alignItems: 'center',
+                    pr: 1,
+                  }}
                 >
                   {/* Spacer to align with drag handle */}
-                  <Box sx={{ width: 48 }} />
+                  <Box sx={{ minWidth: 32 }} />
 
                   <Checkbox
                     checked
-                    onChange={() =>
-                      handleTogglePurchase(item.id)
-                    }
+                    onChange={() => handleTogglePurchase(item.id)}
                   />
 
                   <ListItemText
-                    sx={
-                      editingId === item.id
+                    sx={{
+                      flexGrow: 1,
+                      mr: 1,
+                      overflow: 'hidden',
+                      ...(editingId === item.id
                         ? {}
-                        : { textDecoration: 'line-through' }
-                    }
+                        : { textDecoration: 'line-through' }),
+                    }}
                     primary={
                       editingId === item.id ? (
                         <TextField
                           value={editingText}
-                          onChange={e => setEditingText(e.target.value)}
+                          onChange={(e) => setEditingText(e.target.value)}
                           onBlur={handleSaveEdit}
-                          onKeyDown={e => {
+                          onKeyDown={(e) => {
                             if (e.key === 'Enter') handleSaveEdit();
                           }}
                           autoFocus
                           fullWidth
                           variant="standard"
                           size="small"
-                          onClick={e => e.stopPropagation()}
+                          onClick={(e) => e.stopPropagation()}
                         />
                       ) : (
-                        <span
+                        <Typography
+                          variant="body1"
+                          component="div"
                           onDoubleClick={() => handleStartEdit(item)}
-                          style={{
+                          sx={{
                             cursor: 'text',
-                            width: '100%',
-                            display: 'block',
+                            wordBreak: 'break-word',
+                            whiteSpace: 'pre-wrap',
                           }}
                         >
                           {item.text}
-                        </span>
+                        </Typography>
                       )
                     }
                   />
+
+                  <Stack direction="row" alignItems="center" flexShrink={0}>
+                    <IconButton
+                      disabled={true}
+                      onClick={() => handleUpdateQuantity(item.id, -1)}
+                    >
+                      <RemoveIcon />
+                    </IconButton>
+                    <Typography variant="body2" sx={{ mx: 1 }}>
+                      {item.quantity || 1}
+                    </Typography>
+                    <IconButton
+                      disabled={true}
+                      onClick={() => handleUpdateQuantity(item.id, 1)}
+                    >
+                      <AddIcon />
+                    </IconButton>
+                    <IconButton
+                      disabled={true}
+                      onClick={() =>
+                        setItems((prev) => prev.filter((i) => i.id !== item.id))
+                      }
+                    >
+                      <DeleteIcon />
+                    </IconButton>
+                  </Stack>
                 </ListItem>
               ))}
             </List>
