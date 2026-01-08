@@ -18,6 +18,7 @@ import ShareIcon from '@mui/icons-material/Share';
 import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 import ClearAllIcon from '@mui/icons-material/ClearAll';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
+import LanguageIcon from '@mui/icons-material/Language';
 import Snackbar, { SnackbarCloseReason } from '@mui/material/Snackbar';
 import {
   ShoppingItem,
@@ -27,6 +28,7 @@ import {
   saveToIndexedDB,
   loadFromIndexedDB,
 } from '../utils/shoppingListStorage';
+import { translations, getBrowserLanguage, Language } from '../i18n';
 
 const ShoppingList: React.FC = () => {
   const theme = useTheme();
@@ -62,6 +64,20 @@ const ShoppingList: React.FC = () => {
     setAnchorEl(null);
   };
 
+  /** Language Menu state */
+  const [langAnchorEl, setLangAnchorEl] = useState<null | HTMLElement>(null);
+  const openLangMenu = Boolean(langAnchorEl);
+  const handleLangMenuClick = (event: React.MouseEvent<HTMLElement>) => {
+    setLangAnchorEl(event.currentTarget);
+  };
+  const handleLangMenuClose = () => {
+    setLangAnchorEl(null);
+  };
+  const handleLanguageChange = (lang: Language) => {
+    setLanguage(lang);
+    handleLangMenuClose();
+  };
+
   /** 
   /** Snackbar open state for for copy success */
   const [openSnackbar, setOpenSnackbar] = useState(false);
@@ -71,6 +87,8 @@ const ShoppingList: React.FC = () => {
    * component only renders once client APIs (window, URL) are available
    */
   const [isMounted, setIsMounted] = useState(false);
+  const [language, setLanguage] = useState<Language>('en');
+  const t = translations[language];
 
   /**
    * Initial load:
@@ -84,6 +102,14 @@ const ShoppingList: React.FC = () => {
 
     const init = async () => {
       const params = new URLSearchParams(window.location.search);
+      
+      const queryLang = params.get('lang');
+      if (queryLang && queryLang in translations) {
+        setLanguage(queryLang as Language);
+      } else {
+        setLanguage(getBrowserLanguage());
+      }
+      
       const encodedData = params.get('data');
 
       if (encodedData) {
@@ -123,6 +149,7 @@ const ShoppingList: React.FC = () => {
       }
 
       // Update URL without navigation
+      url.searchParams.set('lang', language);
       window.history.replaceState({}, '', url.toString());
 
       // Sync to IndexedDB
@@ -130,7 +157,7 @@ const ShoppingList: React.FC = () => {
     }, 500);
 
     return () => clearTimeout(timeoutId);
-  }, [items, isMounted]);
+  }, [items, language, isMounted]);
 
   /** Derived list of items not yet purchased */
   const activeItems = useMemo(
@@ -344,10 +371,35 @@ const ShoppingList: React.FC = () => {
           mb={2}
         >
           <Typography variant="h5" fontWeight="bold">
-            Shopping List
+            {t.header.title}
           </Typography>
           {/* Clear & Share actions */}
           <Stack direction="row" spacing={0.5}>
+            <IconButton
+              onClick={handleLangMenuClick}
+              aria-controls={openLangMenu ? 'language-menu' : undefined}
+              aria-haspopup="true"
+              aria-expanded={openLangMenu ? 'true' : undefined}
+            >
+              <LanguageIcon />
+            </IconButton>
+            <Menu
+              id="language-menu"
+              anchorEl={langAnchorEl}
+              open={openLangMenu}
+              onClose={handleLangMenuClose}
+            >
+              {(Object.keys(translations) as Language[]).map((lang) => (
+                <MenuItem
+                  key={lang}
+                  selected={lang === language}
+                  onClick={() => handleLanguageChange(lang)}
+                >
+                  {lang.toUpperCase()}
+                </MenuItem>
+              ))}
+            </Menu>
+
             <IconButton
               id="action-menu-button"
               aria-controls={openMenu ? 'action-menu' : undefined}
@@ -383,19 +435,19 @@ const ShoppingList: React.FC = () => {
                 <ListItemIcon>
                   <ClearAllIcon fontSize="small" />
                 </ListItemIcon>
-                <ListItemText>Clear List</ListItemText>
+                <ListItemText>{t.menu.clearList}</ListItemText>
               </MenuItem>
               <MenuItem
                 onClick={() => {
                   handleMenuClose();
-                  const text = `Check out my shopping list: ${window.location.href}`;
+                  const text = `${t.share.text}${window.location.href}`;
                   window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
                 }}
               >
                 <ListItemIcon>
                   <WhatsAppIcon fontSize="small" />
                 </ListItemIcon>
-                <ListItemText>Share on WhatsApp</ListItemText>
+                <ListItemText>{t.menu.shareWhatsApp}</ListItemText>
               </MenuItem>
               <MenuItem
                 onClick={() => {
@@ -407,7 +459,7 @@ const ShoppingList: React.FC = () => {
                 <ListItemIcon>
                   <ShareIcon fontSize="small" />
                 </ListItemIcon>
-                <ListItemText>Copy Link</ListItemText>
+                <ListItemText>{t.menu.copyLink}</ListItemText>
               </MenuItem>
             </Menu>
           </Stack>
@@ -427,7 +479,7 @@ const ShoppingList: React.FC = () => {
             size="small"
             value={newItemText}
             onChange={(e) => setNewItemText(e.target.value)}
-            placeholder="Add item..."
+            placeholder={t.input.placeholder}
             inputRef={newItemInputRef}
             sx={{
               '& .MuiInputBase-root': {
@@ -586,7 +638,7 @@ const ShoppingList: React.FC = () => {
         {purchasedItems.length > 0 && (
           <Box mt={4}>
             <Typography variant="overline">
-              Purchased ({purchasedItems.length})
+              {t.list.purchased} ({purchasedItems.length})
             </Typography>
 
             <List>
@@ -692,21 +744,21 @@ const ShoppingList: React.FC = () => {
             <ListItemIcon>
               <DeleteIcon fontSize="small" />
             </ListItemIcon>
-            <ListItemText>Delete</ListItemText>
+            <ListItemText>{t.item.delete}</ListItemText>
           </MenuItem>
         </Menu>
 
         {/* Confirm Clear All Dialog */}
         <Dialog open={openClearDialog} onClose={cancelClearAll}>
-          <DialogTitle>Clear entire list?</DialogTitle>
+          <DialogTitle>{t.clearDialog.title}</DialogTitle>
           <DialogContent>
             <DialogContentText>
-              This will permanently remove all items from your shopping list. This action cannot be undone.
+              {t.clearDialog.description}
             </DialogContentText>
           </DialogContent>
           <DialogActions>
-            <Button onClick={cancelClearAll}>Cancel</Button>
-            <Button onClick={confirmClearAll} color="error" variant="contained">Clear All</Button>
+            <Button onClick={cancelClearAll}>{t.clearDialog.cancel}</Button>
+            <Button onClick={confirmClearAll} color="error" variant="contained">{t.clearDialog.confirm}</Button>
           </DialogActions>
         </Dialog>
 
@@ -714,14 +766,14 @@ const ShoppingList: React.FC = () => {
           open={openSnackbar}
           autoHideDuration={5000}
           onClose={handleCloseSnackbar}
-          message="Link copied to clipboard, you can share it now!"
+          message={t.feedback.linkCopied}
         />
 
         {/* Empty state */}
         {items.length === 0 && (
           <Box textAlign="center" py={8}>
             <Typography color="text.secondary">
-              Your list is empty.
+              {t.list.empty}
             </Typography>
           </Box>
         )}

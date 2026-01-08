@@ -1,0 +1,32 @@
+{
+  "header": {
+    "title": "Lista de Compras"
+  },
+  "menu": {
+    "clearList": "Borrar Lista",
+    "shareWhatsApp": "Compartir en WhatsApp",
+    "copyLink": "Copiar Enlace"
+  },
+  "share": {
+    "text": "Mira mi lista de compras: "
+  },
+  "input": {
+    "placeholder": "Agregar artículo..."
+  },
+  "list": {
+    "purchased": "Comprados",
+    "empty": "Tu lista está vacía."
+  },
+  "item": {
+    "delete": "Eliminar"
+  },
+  "clearDialog": {
+    "title": "¿Borrar toda la lista?",
+    "description": "Esto eliminará permanentemente todos los artículos de tu lista de compras. Esta acción no se puede deshacer.",
+    "cancel": "Cancelar",
+    "confirm": "Borrar Todo"
+  },
+  "feedback": {
+    "linkCopied": " ¡Enlace copiado al portapapeles, ya puedes compartirlo!"
+  }
+}

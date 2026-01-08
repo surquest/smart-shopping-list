@@ -1,0 +1,32 @@
+{
+  "header": {
+    "title": "Einkaufsliste"
+  },
+  "menu": {
+    "clearList": "Liste löschen",
+    "shareWhatsApp": "Auf WhatsApp teilen",
+    "copyLink": "Link kopieren"
+  },
+  "share": {
+    "text": "Schau dir meine Einkaufsliste an: "
+  },
+  "input": {
+    "placeholder": "Artikel hinzufügen..."
+  },
+  "list": {
+    "purchased": "Gekauft",
+    "empty": "Deine Liste ist leer."
+  },
+  "item": {
+    "delete": "Löschen"
+  },
+  "clearDialog": {
+    "title": "Gesamte Liste löschen?",
+    "description": "Dies entfernt dauerhaft alle Einträge in deiner Einkaufsliste. Diese Aktion kann nicht rückgängig gemacht werden.",
+    "cancel": "Abbrechen",
+    "confirm": "Alles löschen"
+  },
+  "feedback": {
+    "linkCopied": "Link in die Zwischenablage kopiert, du kannst ihn jetzt teilen!"
+  }
+}
