@@ -18,6 +18,7 @@ import ShareIcon from '@mui/icons-material/Share';
 import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 import ClearAllIcon from '@mui/icons-material/ClearAll';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
+import LanguageIcon from '@mui/icons-material/Language';
 import Snackbar, { SnackbarCloseReason } from '@mui/material/Snackbar';
 import {
   ShoppingItem,
@@ -61,6 +62,20 @@ const ShoppingList: React.FC = () => {
   };
   const handleMenuClose = () => {
     setAnchorEl(null);
+  };
+
+  /** Language Menu state */
+  const [langAnchorEl, setLangAnchorEl] = useState<null | HTMLElement>(null);
+  const openLangMenu = Boolean(langAnchorEl);
+  const handleLangMenuClick = (event: React.MouseEvent<HTMLElement>) => {
+    setLangAnchorEl(event.currentTarget);
+  };
+  const handleLangMenuClose = () => {
+    setLangAnchorEl(null);
+  };
+  const handleLanguageChange = (lang: Language) => {
+    setLanguage(lang);
+    handleLangMenuClose();
   };
 
   /** 
@@ -134,6 +149,7 @@ const ShoppingList: React.FC = () => {
       }
 
       // Update URL without navigation
+      url.searchParams.set('lang', language);
       window.history.replaceState({}, '', url.toString());
 
       // Sync to IndexedDB
@@ -141,7 +157,7 @@ const ShoppingList: React.FC = () => {
     }, 500);
 
     return () => clearTimeout(timeoutId);
-  }, [items, isMounted]);
+  }, [items, language, isMounted]);
 
   /** Derived list of items not yet purchased */
   const activeItems = useMemo(
@@ -359,6 +375,31 @@ const ShoppingList: React.FC = () => {
           </Typography>
           {/* Clear & Share actions */}
           <Stack direction="row" spacing={0.5}>
+            <IconButton
+              onClick={handleLangMenuClick}
+              aria-controls={openLangMenu ? 'language-menu' : undefined}
+              aria-haspopup="true"
+              aria-expanded={openLangMenu ? 'true' : undefined}
+            >
+              <LanguageIcon />
+            </IconButton>
+            <Menu
+              id="language-menu"
+              anchorEl={langAnchorEl}
+              open={openLangMenu}
+              onClose={handleLangMenuClose}
+            >
+              {(Object.keys(translations) as Language[]).map((lang) => (
+                <MenuItem
+                  key={lang}
+                  selected={lang === language}
+                  onClick={() => handleLanguageChange(lang)}
+                >
+                  {lang.toUpperCase()}
+                </MenuItem>
+              ))}
+            </Menu>
+
             <IconButton
               id="action-menu-button"
               aria-controls={openMenu ? 'action-menu' : undefined}
