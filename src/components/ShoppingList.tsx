@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import {
   Box, List, ListItem, ListItemText, ListItemIcon, IconButton,
   Checkbox, TextField, Button, Paper, Typography, Divider, Stack,
@@ -37,6 +37,8 @@ const ShoppingList: React.FC = () => {
 
   /** Controlled input value for new item */
   const [newItemText, setNewItemText] = useState('');
+  /** Ref to the new-item input so we can focus it programmatically */
+  const newItemInputRef = useRef<HTMLInputElement | null>(null);
   /** Dialog open state for clearing the list */
   const [openClearDialog, setOpenClearDialog] = useState(false);
   /** Menu anchor element and open state */
@@ -159,6 +161,12 @@ const ShoppingList: React.FC = () => {
     ]);
 
     setNewItemText('');
+    // focus the input again so user can quickly add another item
+    if (typeof requestAnimationFrame !== 'undefined') {
+      requestAnimationFrame(() => newItemInputRef.current?.focus());
+    } else {
+      setTimeout(() => newItemInputRef.current?.focus(), 0);
+    }
   };
 
   /**
@@ -344,6 +352,7 @@ const ShoppingList: React.FC = () => {
             value={newItemText}
             onChange={e => setNewItemText(e.target.value)}
             placeholder="Add item..."
+            inputRef={newItemInputRef}
           />
           <Button
             variant="contained"
