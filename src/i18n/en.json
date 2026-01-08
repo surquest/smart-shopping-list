@@ -29,4 +29,12 @@
   "feedback": {
     "linkCopied": "Link copied to clipboard, you can share it now!"
   }
+  ,
+  "aria": {
+    "changeLanguage": "Change language",
+    "openActions": "Open actions menu",
+    "addItem": "Add item",
+    "quantity": "Quantity for {item}: {count}",
+    "openItemMenu": "Open item menu for {item}"
+  }
 }

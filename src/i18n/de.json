@@ -29,4 +29,12 @@
   "feedback": {
     "linkCopied": "Link in die Zwischenablage kopiert, du kannst ihn jetzt teilen!"
   }
+  ,
+  "aria": {
+    "changeLanguage": "Sprache ändern",
+    "openActions": "Aktionsmenü öffnen",
+    "addItem": "Artikel hinzufügen",
+    "quantity": "Anzahl für {item}: {count}",
+    "openItemMenu": "Menü für {item} öffnen"
+  }
 }

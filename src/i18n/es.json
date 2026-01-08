@@ -29,4 +29,12 @@
   "feedback": {
     "linkCopied": " ¡Enlace copiado al portapapeles, ya puedes compartirlo!"
   }
+  ,
+  "aria": {
+    "changeLanguage": "Cambiar idioma",
+    "openActions": "Abrir menú de acciones",
+    "addItem": "Agregar artículo",
+    "quantity": "Cantidad para {item}: {count}",
+    "openItemMenu": "Abrir menú del artículo {item}"
+  }
 }

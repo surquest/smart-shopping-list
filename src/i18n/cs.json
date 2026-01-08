@@ -29,4 +29,12 @@
   "feedback": {
     "linkCopied": "Odkaz zkopírován do schránky, nyní jej můžete sdílet!"
   }
+  ,
+  "aria": {
+    "changeLanguage": "Změnit jazyk",
+    "openActions": "Otevřít nabídku akcí",
+    "addItem": "Přidat položku",
+    "quantity": "Počet položek pro {item}: {count}",
+    "openItemMenu": "Otevřít nabídku položky {item}"
+  }
 }

@@ -380,6 +380,7 @@ const ShoppingList: React.FC = () => {
               aria-controls={openLangMenu ? 'language-menu' : undefined}
               aria-haspopup="true"
               aria-expanded={openLangMenu ? 'true' : undefined}
+              aria-label={t.aria.changeLanguage}
             >
               <LanguageIcon />
             </IconButton>
@@ -407,6 +408,7 @@ const ShoppingList: React.FC = () => {
               aria-expanded={openMenu ? 'true' : undefined}
               onClick={handleMenuClick}
               edge="end"
+              aria-label={t.aria.openActions}
             >
               <MoreVertIcon />
             </IconButton>
@@ -496,6 +498,7 @@ const ShoppingList: React.FC = () => {
               minWidth: 48,
               height: 48,
             }}
+            aria-label={t.aria.addItem}
           >
             <AddIcon />
           </Button>
@@ -598,8 +601,11 @@ const ShoppingList: React.FC = () => {
                               label={item.quantity || 1}
                               onClick={() => handleUpdateQuantity(item.id, 1)}
                               onDelete={() => handleUpdateQuantity(item.id, -1)}
-                              icon={<AddIcon />}
-                              deleteIcon={<RemoveIcon />}
+                              icon={<AddIcon aria-hidden="true" />}
+                              deleteIcon={<RemoveIcon aria-hidden="true" />}
+                              aria-label={
+                                t.aria.quantity.replace('{item}', item.text).replace('{count}', String(item.quantity || 1))
+                              }
                               sx={{
                                 // 1. Target the leading icon
                                 '& .MuiChip-icon': {
@@ -618,11 +624,14 @@ const ShoppingList: React.FC = () => {
                               }}
                             />
                           </Stack>
-                          <IconButton
-                            onClick={(e) => handleItemMenuOpen(e, item.id)}
-                          >
-                            <MoreVertIcon />
-                          </IconButton>
+                            <IconButton
+                              onClick={(e) => handleItemMenuOpen(e, item.id)}
+                              aria-label={
+                                t.aria.openItemMenu.replace('{item}', item.text)
+                              }
+                            >
+                              <MoreVertIcon />
+                            </IconButton>
                         </Stack>
                       </ListItem>
                     )}
@@ -705,6 +714,11 @@ const ShoppingList: React.FC = () => {
                   <Stack direction="row" alignItems="center" flexShrink={0}>
                     <Chip
                               label={item.quantity || 1}
+                              aria-label={
+                                t.aria?.quantity
+                                  ? t.aria.quantity.replace('{item}', item.text).replace('{count}', String(item.quantity || 1))
+                                  : `Quantity for ${item.text}: ${item.quantity || 1}`
+                              }
                               />
 
                     {/* <IconButton
@@ -724,6 +738,11 @@ const ShoppingList: React.FC = () => {
                     </IconButton> */}
                     <IconButton
                       onClick={(e) => handleItemMenuOpen(e, item.id)}
+                      aria-label={
+                        t.aria?.openItemMenu
+                          ? t.aria.openItemMenu.replace('{item}', item.text)
+                          : `Open item menu for ${item.text}`
+                      }
                     >
                       <MoreVertIcon />
                     </IconButton>
