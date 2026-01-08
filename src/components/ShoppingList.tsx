@@ -40,6 +40,11 @@ const ShoppingList: React.FC = () => {
   const [newItemText, setNewItemText] = useState('');
   /** Ref to the new-item input so we can focus it programmatically */
   const newItemInputRef = useRef<HTMLInputElement | null>(null);
+
+  /** Edit mode state */
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingText, setEditingText] = useState('');
+
   /** Dialog open state for clearing the list */
   const [openClearDialog, setOpenClearDialog] = useState(false);
   /** Menu anchor element and open state */
@@ -262,6 +267,32 @@ const ShoppingList: React.FC = () => {
     );
   };
 
+  /**
+   * Start editing an item
+   */
+  const handleStartEdit = (item: ShoppingItem) => {
+    setEditingId(item.id);
+    setEditingText(item.text);
+  };
+
+  /**
+   * Save edited text
+   */
+  const handleSaveEdit = () => {
+    if (editingId) {
+      const trimmed = editingText.trim();
+      if (trimmed) {
+        setItems(prev =>
+          prev.map(item =>
+            item.id === editingId ? { ...item, text: trimmed } : item
+          )
+        );
+      }
+      setEditingId(null);
+      setEditingText('');
+    }
+  };
+
   // Avoid rendering until client-only APIs are safe
   if (!isMounted) return null;
 
@@ -444,7 +475,34 @@ const ShoppingList: React.FC = () => {
                         />
 
                         <ListItemText
-                          primary={`${item.text}`}
+                          primary={
+                            editingId === item.id ? (
+                              <TextField
+                                value={editingText}
+                                onChange={e => setEditingText(e.target.value)}
+                                onBlur={handleSaveEdit}
+                                onKeyDown={e => {
+                                  if (e.key === 'Enter') handleSaveEdit();
+                                }}
+                                autoFocus
+                                fullWidth
+                                variant="standard"
+                                size="small"
+                                onClick={e => e.stopPropagation()}
+                              />
+                            ) : (
+                              <span
+                                onDoubleClick={() => handleStartEdit(item)}
+                                style={{
+                                  cursor: 'text',
+                                  width: '100%',
+                                  display: 'block',
+                                }}
+                              >
+                                {item.text}
+                              </span>
+                            )
+                          }
                         />
                       </ListItem>
                     )}
@@ -506,8 +564,39 @@ const ShoppingList: React.FC = () => {
                   />
 
                   <ListItemText
-                    sx={{ textDecoration: 'line-through' }}
-                    primary={`${item.text}`}
+                    sx={
+                      editingId === item.id
+                        ? {}
+                        : { textDecoration: 'line-through' }
+                    }
+                    primary={
+                      editingId === item.id ? (
+                        <TextField
+                          value={editingText}
+                          onChange={e => setEditingText(e.target.value)}
+                          onBlur={handleSaveEdit}
+                          onKeyDown={e => {
+                            if (e.key === 'Enter') handleSaveEdit();
+                          }}
+                          autoFocus
+                          fullWidth
+                          variant="standard"
+                          size="small"
+                          onClick={e => e.stopPropagation()}
+                        />
+                      ) : (
+                        <span
+                          onDoubleClick={() => handleStartEdit(item)}
+                          style={{
+                            cursor: 'text',
+                            width: '100%',
+                            display: 'block',
+                          }}
+                        >
+                          {item.text}
+                        </span>
+                      )
+                    }
                   />
                 </ListItem>
               ))}
