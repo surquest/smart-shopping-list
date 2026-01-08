@@ -12,6 +12,7 @@ import {
 import DeleteIcon from '@mui/icons-material/Delete';
 import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
 import AddIcon from '@mui/icons-material/Add';
+import RemoveIcon from '@mui/icons-material/Remove';
 import ShareIcon from '@mui/icons-material/Share';
 import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 import ClearAllIcon from '@mui/icons-material/ClearAll';
@@ -94,26 +95,31 @@ const ShoppingList: React.FC = () => {
   /**
    * Persist state to URL and IndexedDB on every change.
    * Enables sharing the list via link and offline storage.
+   * Debounced to prevent excessive writes and checking history API limits.
    */
   useEffect(() => {
     if (!isMounted) return;
 
-    const url = new URL(window.location.href);
+    const timeoutId = setTimeout(() => {
+      const url = new URL(window.location.href);
 
-    if (items.length === 0) {
-      url.searchParams.delete('data');
-    } else {
-      const encodedData = encodeItemsForUrl(items);
-      if (encodedData) {
-        url.searchParams.set('data', encodedData);
+      if (items.length === 0) {
+        url.searchParams.delete('data');
+      } else {
+        const encodedData = encodeItemsForUrl(items);
+        if (encodedData) {
+          url.searchParams.set('data', encodedData);
+        }
       }
-    }
 
-    // Update URL without navigation
-    window.history.replaceState({}, '', url.toString());
+      // Update URL without navigation
+      window.history.replaceState({}, '', url.toString());
 
-    // Sync to IndexedDB
-    saveToIndexedDB(items);
+      // Sync to IndexedDB
+      saveToIndexedDB(items);
+    }, 500);
+
+    return () => clearTimeout(timeoutId);
   }, [items, isMounted]);
 
   /** Derived list of items not yet purchased */
@@ -152,6 +158,7 @@ const ShoppingList: React.FC = () => {
       id: generateItemId(),
       text: newItemText.trim(),
       isPurchased: false,
+      quantity: 1,
     };
 
     setItems(prev => [
@@ -240,6 +247,19 @@ const ShoppingList: React.FC = () => {
         ? [...active, ...purchased, updated]
         : [updated, ...active, ...purchased];
     });
+  };
+
+  /**
+   * Updates an item's quantity ensuring it stays at >= 1
+   */
+  const handleUpdateQuantity = (id: string, delta: number) => {
+    setItems(prev =>
+      prev.map(item => {
+        if (item.id !== id) return item;
+        const newQuantity = Math.max(1, (item.quantity || 1) + delta);
+        return { ...item, quantity: newQuantity };
+      })
+    );
   };
 
   // Avoid rendering until client-only APIs are safe
@@ -380,15 +400,30 @@ const ShoppingList: React.FC = () => {
                         {...provided.draggableProps}
                         divider
                         secondaryAction={
-                          <IconButton
-                            onClick={() =>
-                              setItems(prev =>
-                                prev.filter(i => i.id !== item.id)
-                              )
-                            }
-                          >
-                            <DeleteIcon />
-                          </IconButton>
+                          <Stack direction="row" alignItems="center">
+                            <IconButton
+                              onClick={() => handleUpdateQuantity(item.id, -1)}
+                            >
+                              <RemoveIcon />
+                            </IconButton>
+                            <Typography variant="body2" sx={{ mx: 1 }}>
+                              {item.quantity || 1}
+                            </Typography>
+                            <IconButton
+                              onClick={() => handleUpdateQuantity(item.id, 1)}
+                            >
+                              <AddIcon />
+                            </IconButton>
+                            <IconButton
+                              onClick={() =>
+                                setItems(prev =>
+                                  prev.filter(i => i.id !== item.id)
+                                )
+                              }
+                            >
+                              <DeleteIcon />
+                            </IconButton>
+                          </Stack>
                         }
                         sx={{
                           bgcolor: snapshot.isDragging
@@ -409,7 +444,7 @@ const ShoppingList: React.FC = () => {
                         />
 
                         <ListItemText
-                          primary={`${itemPositions[item.id]}. ${item.text}`}
+                          primary={`${item.text}`}
                         />
                       </ListItem>
                     )}
@@ -434,15 +469,30 @@ const ShoppingList: React.FC = () => {
                   key={item.id}
                   divider
                   secondaryAction={
-                    <IconButton
-                      onClick={() =>
-                        setItems(prev =>
-                          prev.filter(i => i.id !== item.id)
-                        )
-                      }
-                    >
-                      <DeleteIcon />
-                    </IconButton>
+                    <Stack direction="row" alignItems="center">
+                      <IconButton
+                        onClick={() => handleUpdateQuantity(item.id, -1)}
+                      >
+                        <RemoveIcon />
+                      </IconButton>
+                      <Typography variant="body2" sx={{ mx: 1 }}>
+                        {item.quantity || 1}
+                      </Typography>
+                      <IconButton
+                        onClick={() => handleUpdateQuantity(item.id, 1)}
+                      >
+                        <AddIcon />
+                      </IconButton>
+                      <IconButton
+                        onClick={() =>
+                          setItems(prev =>
+                            prev.filter(i => i.id !== item.id)
+                          )
+                        }
+                      >
+                        <DeleteIcon />
+                      </IconButton>
+                    </Stack>
                   }
                 >
                   {/* Spacer to align with drag handle */}
@@ -457,7 +507,7 @@ const ShoppingList: React.FC = () => {
 
                   <ListItemText
                     sx={{ textDecoration: 'line-through' }}
-                    primary={`${itemPositions[item.id]}. ${item.text}`}
+                    primary={`${item.text}`}
                   />
                 </ListItem>
               ))}

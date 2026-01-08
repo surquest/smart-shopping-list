@@ -2,9 +2,14 @@ export interface ShoppingItem {
   id: string;           // Unique client-side identifier
   text: string;         // Item label
   isPurchased: boolean; // Purchase status
+  quantity: number;     // Item quantity
 }
 
-type SerializedItem = [number, string];
+/**
+ * Compact representation stored in URL:
+ * [purchasedFlag, text, quantity]
+ */
+type SerializedItem = [number, string, number?];
 
 /**
  * Generates short random IDs for list items.
@@ -55,6 +60,7 @@ export const encodeItemsForUrl = (items: ShoppingItem[]) => {
     items.map<SerializedItem>(item => [
       item.isPurchased ? 1 : 0,
       item.text,
+      item.quantity || 1,
     ])
   );
 
@@ -66,10 +72,11 @@ export const decodeItemsFromUrl = (raw: string): ShoppingItem[] => {
     const parsed: SerializedItem[] =
       JSON.parse(fromBase64Url(raw));
 
-    return parsed.map(([flag, text]) => ({
+    return parsed.map(([flag, text, qty]) => ({
       id: generateItemId(),
       text,
       isPurchased: flag === 1,
+      quantity: qty || 1,
     }));
   } catch {
     return [];
