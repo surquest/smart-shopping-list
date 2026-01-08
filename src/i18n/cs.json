@@ -1,0 +1,32 @@
+{
+  "header": {
+    "title": "Nákupní seznam"
+  },
+  "menu": {
+    "clearList": "Vymazat seznam",
+    "shareWhatsApp": "Sdílet na WhatsApp",
+    "copyLink": "Kopírovat odkaz"
+  },
+  "share": {
+    "text": "Podívej se na můj nákupní seznam: "
+  },
+  "input": {
+    "placeholder": "Přidat položku..."
+  },
+  "list": {
+    "purchased": "Zakoupené",
+    "empty": "Váš seznam je prázdný."
+  },
+  "item": {
+    "delete": "Smazat"
+  },
+  "clearDialog": {
+    "title": "Vymazat celý seznam?",
+    "description": "Tímto trvale odstraníte všechny položky ze svého nákupního seznamu. Tuto akci nelze vrátit zpět.",
+    "cancel": "Zrušit",
+    "confirm": "Vymazat vše"
+  },
+  "feedback": {
+    "linkCopied": "Odkaz zkopírován do schránky, nyní jej můžete sdílet!"
+  }
+}

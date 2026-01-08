@@ -1,0 +1,32 @@
+{
+  "header": {
+    "title": "Shopping List"
+  },
+  "menu": {
+    "clearList": "Clear List",
+    "shareWhatsApp": "Share on WhatsApp",
+    "copyLink": "Copy Link"
+  },
+  "share": {
+    "text": "Check out my shopping list: "
+  },
+  "input": {
+    "placeholder": "Add item..."
+  },
+  "list": {
+    "purchased": "Purchased",
+    "empty": "Your list is empty."
+  },
+  "item": {
+    "delete": "Delete"
+  },
+  "clearDialog": {
+    "title": "Clear entire list?",
+    "description": "This will permanently remove all items from your shopping list. This action cannot be undone.",
+    "cancel": "Cancel",
+    "confirm": "Clear All"
+  },
+  "feedback": {
+    "linkCopied": "Link copied to clipboard, you can share it now!"
+  }
+}
