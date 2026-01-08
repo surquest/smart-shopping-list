@@ -5,6 +5,7 @@ import {
   Tooltip, useTheme, useMediaQuery,
   Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions,
   Menu, MenuItem,
+  Chip
 } from '@mui/material';
 import {
   DragDropContext, Droppable, Draggable, DropResult,
@@ -541,19 +542,29 @@ const ShoppingList: React.FC = () => {
                               borderRadius: 1 
                             }}
                           >
-                            <IconButton
-                              onClick={() => handleUpdateQuantity(item.id, -1)}
-                            >
-                              <RemoveIcon />
-                            </IconButton>
-                            <Typography variant="body2" sx={{ mx: 1 }}>
-                              {item.quantity || 1}
-                            </Typography>
-                            <IconButton
+                            <Chip
+                              label={item.quantity || 1}
                               onClick={() => handleUpdateQuantity(item.id, 1)}
-                            >
-                              <AddIcon />
-                            </IconButton>
+                              onDelete={() => handleUpdateQuantity(item.id, -1)}
+                              icon={<AddIcon />}
+                              deleteIcon={<RemoveIcon />}
+                              sx={{
+                                // 1. Target the leading icon
+                                '& .MuiChip-icon': {
+                                  color: theme.palette.text.secondary,
+                                },
+                                // 2. Target the trailing (delete) icon
+                                '& .MuiChip-deleteIcon': {
+                                  color: theme.palette.text.secondary,
+                                  opacity: 1, // Overrides default MUI fading (0.7)
+                                  // 3. Prevent color/opacity shifting on hover
+                                  '&:hover': {
+                                    color: theme.palette.text.secondary,
+                                    opacity: 1,
+                                  },
+                                },
+                              }}
+                            />
                           </Stack>
                           <IconButton
                             onClick={(e) => handleItemMenuOpen(e, item.id)}
@@ -640,7 +651,11 @@ const ShoppingList: React.FC = () => {
                   />
 
                   <Stack direction="row" alignItems="center" flexShrink={0}>
-                    <IconButton
+                    <Chip
+                              label={item.quantity || 1}
+                              />
+
+                    {/* <IconButton
                       disabled={true}
                       onClick={() => handleUpdateQuantity(item.id, -1)}
                     >
@@ -654,7 +669,7 @@ const ShoppingList: React.FC = () => {
                       onClick={() => handleUpdateQuantity(item.id, 1)}
                     >
                       <AddIcon />
-                    </IconButton>
+                    </IconButton> */}
                     <IconButton
                       onClick={(e) => handleItemMenuOpen(e, item.id)}
                     >
