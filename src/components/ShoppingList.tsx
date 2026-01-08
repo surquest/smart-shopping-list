@@ -102,14 +102,14 @@ const ShoppingList: React.FC = () => {
 
     const init = async () => {
       const params = new URLSearchParams(window.location.search);
-      
+
       const queryLang = params.get('lang');
       if (queryLang && queryLang in translations) {
         setLanguage(queryLang as Language);
       } else {
         setLanguage(getBrowserLanguage());
       }
-      
+
       const encodedData = params.get('data');
 
       if (encodedData) {
@@ -537,12 +537,21 @@ const ShoppingList: React.FC = () => {
                           }}
                           {...provided.dragHandleProps}
                         >
-                          <DragIndicatorIcon />
+                          <IconButton
+                            aria-label={t.aria.dragHandle.replace('{item}', item.text)}
+                          >
+                            <DragIndicatorIcon aria-hidden="true" />
+                          </IconButton>
                         </ListItemIcon>
 
                         <Checkbox
                           checked={item.isPurchased}
                           onChange={() => handleTogglePurchase(item.id)}
+                          slotProps={{
+                            input: {
+                              'aria-label': t.aria.markPurchased.replace('{item}', item.text)
+                            },
+                          }}
                         />
 
                         <ListItemText
@@ -592,9 +601,9 @@ const ShoppingList: React.FC = () => {
                             direction="row"
                             alignItems="center"
                             flexShrink={0}
-                            sx={{ 
-                              backgroundColor: theme.palette.background.paper, 
-                              borderRadius: 1 
+                            sx={{
+                              backgroundColor: theme.palette.background.paper,
+                              borderRadius: 1
                             }}
                           >
                             <Chip
@@ -624,14 +633,14 @@ const ShoppingList: React.FC = () => {
                               }}
                             />
                           </Stack>
-                            <IconButton
-                              onClick={(e) => handleItemMenuOpen(e, item.id)}
-                              aria-label={
-                                t.aria.openItemMenu.replace('{item}', item.text)
-                              }
-                            >
-                              <MoreVertIcon />
-                            </IconButton>
+                          <IconButton
+                            onClick={(e) => handleItemMenuOpen(e, item.id)}
+                            aria-label={
+                              t.aria.openItemMenu.replace('{item}', item.text)
+                            }
+                          >
+                            <MoreVertIcon />
+                          </IconButton>
                         </Stack>
                       </ListItem>
                     )}
@@ -668,6 +677,11 @@ const ShoppingList: React.FC = () => {
                   <Checkbox
                     checked
                     onChange={() => handleTogglePurchase(item.id)}
+                    slotProps={{
+                      input: {
+                        'aria-label': t.aria.unmarkPurchased.replace('{item}', item.text)
+                      },
+                    }}
                   />
 
                   <ListItemText
@@ -713,35 +727,15 @@ const ShoppingList: React.FC = () => {
 
                   <Stack direction="row" alignItems="center" flexShrink={0}>
                     <Chip
-                              label={item.quantity || 1}
-                              aria-label={
-                                t.aria?.quantity
-                                  ? t.aria.quantity.replace('{item}', item.text).replace('{count}', String(item.quantity || 1))
-                                  : `Quantity for ${item.text}: ${item.quantity || 1}`
-                              }
-                              />
-
-                    {/* <IconButton
-                      disabled={true}
-                      onClick={() => handleUpdateQuantity(item.id, -1)}
-                    >
-                      <RemoveIcon />
-                    </IconButton>
-                    <Typography variant="body2" sx={{ mx: 1 }}>
-                      {item.quantity || 1}
-                    </Typography>
-                    <IconButton
-                      disabled={true}
-                      onClick={() => handleUpdateQuantity(item.id, 1)}
-                    >
-                      <AddIcon />
-                    </IconButton> */}
+                      label={item.quantity || 1}
+                      aria-label={
+                        t.aria.quantity.replace('{item}', item.text).replace('{count}', String(item.quantity || 1))
+                      }
+                    />
                     <IconButton
                       onClick={(e) => handleItemMenuOpen(e, item.id)}
                       aria-label={
-                        t.aria?.openItemMenu
-                          ? t.aria.openItemMenu.replace('{item}', item.text)
-                          : `Open item menu for ${item.text}`
+                        t.aria.openItemMenu.replace('{item}', item.text)
                       }
                     >
                       <MoreVertIcon />

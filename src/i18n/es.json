@@ -35,6 +35,9 @@
     "openActions": "Abrir menú de acciones",
     "addItem": "Agregar artículo",
     "quantity": "Cantidad para {item}: {count}",
-    "openItemMenu": "Abrir menú del artículo {item}"
+    "openItemMenu": "Abrir menú del artículo {item}",
+    "unmarkPurchased": "Desmarcar {item} comprado",
+    "markPurchased": "Marcar {item} como comprado",
+    "dragHandle": "Arrastrar {item}"
   }
 }

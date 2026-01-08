@@ -35,6 +35,9 @@
     "openActions": "Otevřít nabídku akcí",
     "addItem": "Přidat položku",
     "quantity": "Počet položek pro {item}: {count}",
-    "openItemMenu": "Otevřít nabídku položky {item}"
+    "openItemMenu": "Otevřít nabídku položky {item}",
+    "unmarkPurchased": "Odznačit zakoupené {item}",
+    "markPurchased": "Označit {item} jako zakoupené",
+    "dragHandle": "Přetáhnout položku {item}"
   }
 }
