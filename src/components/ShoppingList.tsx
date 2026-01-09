@@ -78,8 +78,7 @@ const ShoppingList: React.FC = () => {
     handleLangMenuClose();
   };
 
-  /** 
-  /** Snackbar open state for for copy success */
+  /** Snackbar open state for copy success */
   const [openSnackbar, setOpenSnackbar] = useState(false);
 
   /**
@@ -519,6 +518,7 @@ const ShoppingList: React.FC = () => {
                       <ListItem
                         ref={provided.innerRef}
                         {...provided.draggableProps}
+                        {...provided.dragHandleProps}
                         divider
                         sx={{
                           bgcolor: snapshot.isDragging
@@ -528,17 +528,20 @@ const ShoppingList: React.FC = () => {
                           alignItems: 'center',
                           pr: 1,
                           pl: 0,
+                          cursor: 'grab',
+                          '&:active': { cursor: 'grabbing' },
                         }}
                       >
-                        {/* Drag handle */}
+                        {/* Drag handle (visual only — whole ListItem is the handle) */}
                         <ListItemIcon
                           sx={{
                             minWidth: 32,
                           }}
-                          {...provided.dragHandleProps}
                         >
                           <IconButton
-                            aria-label={t.aria.dragHandle.replace('{item}', item.text)}
+                            aria-hidden="true"
+                            tabIndex={-1}
+                            disableRipple
                           >
                             <DragIndicatorIcon aria-hidden="true" />
                           </IconButton>
