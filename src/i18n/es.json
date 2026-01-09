@@ -18,13 +18,20 @@
     "empty": "Tu lista está vacía."
   },
   "item": {
-    "delete": "Eliminar"
+    "delete": "Eliminar",
+    "edit": "Editar"
   },
   "clearDialog": {
     "title": "¿Borrar toda la lista?",
     "description": "Esto eliminará permanentemente todos los artículos de tu lista de compras. Esta acción no se puede deshacer.",
     "cancel": "Cancelar",
     "confirm": "Borrar Todo"
+  },
+  "editDialog": {
+    "title": "Editar Artículo",
+    "description": "Realiza los cambios y guárdalos.",
+    "cancel": "Cancelar",
+    "confirm": "Guardar Cambios"
   },
   "feedback": {
     "linkCopied": " ¡Enlace copiado al portapapeles, ya puedes compartirlo!"

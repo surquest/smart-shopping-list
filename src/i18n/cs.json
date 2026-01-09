@@ -18,7 +18,8 @@
     "empty": "Váš seznam je prázdný."
   },
   "item": {
-    "delete": "Smazat"
+    "delete": "Smazat",
+    "edit": "Upravit"
   },
   "clearDialog": {
     "title": "Vymazat celý seznam?",
@@ -26,10 +27,15 @@
     "cancel": "Zrušit",
     "confirm": "Vymazat vše"
   },
+  "editDialog": {
+    "title": "Upravit položku",
+    "description": "Proveďte změny a uložte je.",
+    "cancel": "Zrušit",
+    "confirm": "Uložit změny"
+  },
   "feedback": {
     "linkCopied": "Odkaz zkopírován do schránky, nyní jej můžete sdílet!"
-  }
-  ,
+  },
   "aria": {
     "changeLanguage": "Změnit jazyk",
     "openActions": "Otevřít nabídku akcí",

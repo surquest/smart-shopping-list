@@ -18,7 +18,8 @@
     "empty": "Deine Liste ist leer."
   },
   "item": {
-    "delete": "Löschen"
+    "delete": "Löschen",
+    "edit": "Bearbeiten"
   },
   "clearDialog": {
     "title": "Gesamte Liste löschen?",
@@ -26,10 +27,15 @@
     "cancel": "Abbrechen",
     "confirm": "Alles löschen"
   },
+  "editDialog": {
+    "title": "Artikel bearbeiten",
+    "description": "Nimm Änderungen vor und speichere sie.",
+    "cancel": "Abbrechen",
+    "confirm": "Änderungen speichern"
+  },
   "feedback": {
     "linkCopied": "Link in die Zwischenablage kopiert, du kannst ihn jetzt teilen!"
-  }
-  ,
+  },
   "aria": {
     "changeLanguage": "Sprache ändern",
     "openActions": "Aktionsmenü öffnen",

@@ -19,6 +19,7 @@ import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 import ClearAllIcon from '@mui/icons-material/ClearAll';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import LanguageIcon from '@mui/icons-material/Language';
+import EditIcon from '@mui/icons-material/Edit';
 import Snackbar, { SnackbarCloseReason } from '@mui/material/Snackbar';
 import {
   ShoppingItem,
@@ -54,6 +55,10 @@ const ShoppingList: React.FC = () => {
 
   /** Dialog open state for clearing the list */
   const [openClearDialog, setOpenClearDialog] = useState(false);
+  /** Dialog open state for editing an item from the item menu */
+  const [openEditDialog, setOpenEditDialog] = useState(false);
+  const [dialogEditingId, setDialogEditingId] = useState<string | null>(null);
+  const [dialogEditingText, setDialogEditingText] = useState('');
   /** Menu anchor element and open state */
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const openMenu = Boolean(anchorEl);
@@ -340,6 +345,32 @@ const ShoppingList: React.FC = () => {
       setItems(prev => prev.filter(i => i.id !== itemMenuId));
     }
     handleItemMenuClose();
+  };
+
+  /** Open edit dialog for item selected in the item menu */
+  const handleOpenEditDialog = () => {
+    if (!itemMenuId) return;
+    const item = items.find(i => i.id === itemMenuId);
+    if (!item) return;
+    setDialogEditingId(item.id);
+    setDialogEditingText(item.text);
+    setOpenEditDialog(true);
+    handleItemMenuClose();
+  };
+
+  const handleCloseEditDialog = () => {
+    setOpenEditDialog(false);
+    setDialogEditingId(null);
+    setDialogEditingText('');
+  };
+
+  const handleConfirmEdit = () => {
+    if (!dialogEditingId) return;
+    const trimmed = dialogEditingText.trim();
+    if (trimmed) {
+      setItems(prev => prev.map(item => item.id === dialogEditingId ? { ...item, text: trimmed } : item));
+    }
+    handleCloseEditDialog();
   };
 
   // Avoid rendering until client-only APIs are safe
@@ -756,6 +787,12 @@ const ShoppingList: React.FC = () => {
           open={Boolean(itemMenuAnchorEl)}
           onClose={handleItemMenuClose}
         >
+          <MenuItem onClick={handleOpenEditDialog}>
+            <ListItemIcon>
+              <EditIcon fontSize="small" />
+            </ListItemIcon>
+            <ListItemText>{t.item.edit}</ListItemText>
+          </MenuItem>
           <MenuItem onClick={handleDeleteItem}>
             <ListItemIcon>
               <DeleteIcon fontSize="small" />
@@ -763,6 +800,25 @@ const ShoppingList: React.FC = () => {
             <ListItemText>{t.item.delete}</ListItemText>
           </MenuItem>
         </Menu>
+
+        {/* Edit Item Dialog */}
+        <Dialog open={openEditDialog} onClose={handleCloseEditDialog}>
+          <DialogTitle>{t.editDialog.title}</DialogTitle>
+          <DialogContent>
+            <TextField
+              autoFocus
+              margin="dense"
+              fullWidth
+              value={dialogEditingText}
+              onChange={(e) => setDialogEditingText(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter') handleConfirmEdit(); }}
+            />
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleCloseEditDialog}>{t.editDialog.cancel}</Button>
+            <Button onClick={handleConfirmEdit} variant="contained">{t.editDialog.confirm}</Button>
+          </DialogActions>
+        </Dialog>
 
         {/* Confirm Clear All Dialog */}
         <Dialog open={openClearDialog} onClose={cancelClearAll}>

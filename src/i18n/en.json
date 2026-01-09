@@ -18,13 +18,20 @@
     "empty": "Your list is empty."
   },
   "item": {
-    "delete": "Delete"
+    "delete": "Delete",
+    "edit": "Edit"
   },
   "clearDialog": {
     "title": "Clear entire list?",
     "description": "This will permanently remove all items from your shopping list. This action cannot be undone.",
     "cancel": "Cancel",
     "confirm": "Clear All"
+  },
+  "editDialog": {
+    "title": "Edit Item",
+    "description": "Make changes and save them.",
+    "cancel": "Cancel",
+    "confirm": "Save Changes"
   },
   "feedback": {
     "linkCopied": "Link copied to clipboard, you can share it now!"
