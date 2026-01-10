@@ -245,7 +245,7 @@ const ShoppingList: React.FC = () => {
         elevation={0}
         sx={{
           p: { xs: 2, sm: 3 },
-          borderRadius: { xs: 0, sm: 2 },
+          borderRadius: { xs: 0, sm: 0.5 },
           minHeight: { xs: 'calc(100vh - 56px - 64px)', sm: 'auto' },
           boxShadow: { xs: 'none', sm: theme.shadows[3] },
         }}

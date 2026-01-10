@@ -77,7 +77,6 @@ export default function InstallPrompt() {
         variant="extended"
         color="primary"
         onClick={handleInstallClick}
-        size="small"
         aria-label="Install"
         sx={{
           position: 'fixed',

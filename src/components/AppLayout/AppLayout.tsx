@@ -1,5 +1,4 @@
 'use client';
-
 import * as React from 'react';
 import {
     Box,
@@ -23,11 +22,8 @@ import {
     Translate,
 } from '@mui/icons-material';
 import { useTranslation } from '@/i18n/useTranslation';
-import { useRouter, usePathname } from 'next/navigation';
-import useScrollTrigger from '@mui/material/useScrollTrigger';
-import Slide from '@mui/material/Slide';
-import CssBaseline from '@mui/material/CssBaseline';
-
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 
 
 
@@ -56,25 +52,35 @@ const useMenu = () => {
 
 
 const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
-    const router = useRouter();
+
     const pathname = usePathname();
+
+    // Determine which tab is active based on the URL path
+    // This handles sub-routes (e.g., /lists/123 still highlights /lists)
+    const getActiveValue = () => {
+        if (pathname.startsWith('/lists')) return '/lists';
+        if (pathname.startsWith('/products')) return '/products';
+        if (pathname.startsWith('/stores')) return '/stores';
+        if (pathname.startsWith('/cards')) return '/cards';
+        return pathname;
+    };
 
     // Initialize separate menu controllers
     const langMenu = useMenu();
 
-    const [value, setValue] = React.useState<string>(pathname);
+    const [value, setValue] = React.useState<string>(getActiveValue());
 
     const { t, language, setLanguage, languages } = useTranslation();
 
     // Keep BottomNavigation in sync with route changes
     React.useEffect(() => {
-        setValue(pathname);
+        setValue(getActiveValue());
     }, [pathname]);
 
     return (
         <Box sx={{ pb: 7 }}>
 
-            <AppBar position="sticky" elevation={1} color="inherit">
+            <AppBar position="sticky" elevation={1} color='default'>
                 <Toolbar>
                     <Box sx={{ flexGrow: 1 }}>
                         <Typography variant="h1">{t.app?.title ?? ''}</Typography>
@@ -96,7 +102,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
                         </IconButton>
 
                         {/* User Profile */}
-                        <IconButton onClick={() => router.push('/profile')}>
+                        <IconButton>
                             <Avatar sx={{ width: 32, height: 32 }} />
                         </IconButton>
                         <Stack direction="row" spacing={0.5}>
@@ -135,34 +141,35 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
             >
                 <BottomNavigation
                     showLabels
-                    value={value}
-                    onChange={(
-                        _event: React.SyntheticEvent,
-                        newValue: string
-                    ) => {
-                        setValue(newValue);
-                        router.push(newValue);
-                    }}
+                    value={getActiveValue()}
                 >
                     <BottomNavigationAction
                         label={t.nav.lists}
-                        value="/lists"
                         icon={<List />}
+                        value="/lists"
+                        component={Link}
+                        href="/lists"
                     />
                     <BottomNavigationAction
                         label={t.nav.products}
-                        value="/products"
                         icon={<LocalOffer />}
+                        value="/products"
+                        component={Link}
+                        href="/products"
                     />
                     <BottomNavigationAction
                         label={t.nav.stores}
-                        value="/stores"
                         icon={<Store />}
+                        value="/stores"
+                        component={Link}
+                        href="/stores"
                     />
                     <BottomNavigationAction
                         label={t.nav.cards}
-                        value="/cards"
                         icon={<CreditCard />}
+                        value="/cards"
+                        component={Link}
+                        href="/cards"
                     />
                 </BottomNavigation>
             </Paper>

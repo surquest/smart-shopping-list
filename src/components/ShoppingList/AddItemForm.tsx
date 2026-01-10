@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { Stack, TextField, Button, Snackbar } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
@@ -52,11 +54,15 @@ const useSpeechRecognition = (
   onResult: (transcript: string) => void
 ) => {
   const [isRecording, setIsRecording] = useState(false);
+  const [isSupported, setIsSupported] = useState(false);
   const recognitionRef = useRef<ISpeechRecognition | null>(null);
-  
-  // Check if browser supports the API
-  const isSupported = typeof window !== 'undefined' && 
-    (!!(window as WindowWithSpeech).SpeechRecognition || !!(window as WindowWithSpeech).webkitSpeechRecognition);
+
+  useEffect(() => {
+    // Check if browser supports the API
+    const supported = typeof window !== 'undefined' &&
+      (!!(window as WindowWithSpeech).SpeechRecognition || !!(window as WindowWithSpeech).webkitSpeechRecognition);
+    setIsSupported(supported);
+  }, []);
 
   const startRecording = useCallback(() => {
     if (!isSupported) return;
@@ -77,7 +83,7 @@ const useSpeechRecognition = (
           .map((r: any) => r[0].transcript)
           .join(' ')
           .trim();
-        
+
         if (transcript) {
           onResult(transcript);
         }
@@ -130,7 +136,7 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
   language = 'en-US', // Default value
   voiceLabels,
 }) => {
-  
+
   // Callback wrapper to append spoken text to existing text
   const handleSpeechResult = useCallback((transcript: string) => {
     // We add a space if there is already text, then append the transcript
@@ -139,7 +145,7 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
   }, [value, onChange]);
 
   // Use our custom hook
-  const { isRecording, startRecording, stopRecording, isSupported } = 
+  const { isRecording, startRecording, stopRecording, isSupported } =
     useSpeechRecognition(language, handleSpeechResult);
 
   const toggleRecording = () => {
@@ -181,17 +187,17 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
         />
 
         {showMicButton ? (
-           <Button
-             variant="contained"
-             onClick={toggleRecording}
-             // Ensure consistent square shape
-             sx={{ minWidth: 48, height: 48 }}
-             color={isRecording ? "error" : "primary"}
-             aria-label={isRecording ? (voiceLabels?.stop ?? 'Stop voice input') : (voiceLabels?.start ?? 'Start voice input')}
-             aria-pressed={isRecording}
-           >
-             <MicIcon />
-           </Button>
+          <Button
+            variant="contained"
+            onClick={toggleRecording}
+            // Ensure consistent square shape
+            sx={{ minWidth: 48, height: 48 }}
+            color={isRecording ? "error" : "primary"}
+            aria-label={isRecording ? (voiceLabels?.stop ?? 'Stop voice input') : (voiceLabels?.start ?? 'Start voice input')}
+            aria-pressed={isRecording}
+          >
+            <MicIcon />
+          </Button>
         ) : (
           <Button
             variant="contained"
