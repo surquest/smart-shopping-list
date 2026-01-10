@@ -85,7 +85,6 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
       setIsRecording(true);
       setSnackOpen(true);
       recog.start();
-      console.log('Voice recognition started', recog);
     } catch (e) {
       // ignore failures silently
     }
