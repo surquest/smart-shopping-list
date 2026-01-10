@@ -363,7 +363,7 @@ const ShoppingList: React.FC = () => {
           inputRef={newItemInputRef}
           placeholder={t.input.placeholder}
           ariaLabel={t.aria.addItem}
-          locale={navigator.language || `${language}-${language.toUpperCase()}`}
+          language={language}
           voiceLabels={{ start: t.voice.start, stop: t.voice.stop, listening: t.voice.listening }}
         />
 

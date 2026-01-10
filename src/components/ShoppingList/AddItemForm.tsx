@@ -10,7 +10,7 @@ interface AddItemFormProps {
   inputRef: React.RefObject<HTMLInputElement>;
   placeholder: string;
   ariaLabel: string;
-  locale?: string;
+  language: string;
   voiceLabels?: {
     start: string;
     stop: string;
@@ -25,7 +25,7 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
   inputRef,
   placeholder,
   ariaLabel,
-  locale,
+  language,
   voiceLabels,
 }) => {
   const [isRecording, setIsRecording] = useState(false);
@@ -57,7 +57,7 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
     try {
       const recog = new SpeechRecognitionConstructor();
       recognitionRef.current = recog;
-      recog.lang = locale || navigator.language || 'en-US';
+      recog.lang = language || navigator.language || 'en-US';
       recog.interimResults = false;
       recog.maxAlternatives = 1;
 
@@ -85,6 +85,7 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
       setIsRecording(true);
       setSnackOpen(true);
       recog.start();
+      console.log('Voice recognition started', recog);
     } catch (e) {
       // ignore failures silently
     }
