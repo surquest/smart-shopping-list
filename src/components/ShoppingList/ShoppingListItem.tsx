@@ -92,7 +92,7 @@ const ShoppingListItem: React.FC<ShoppingListItemProps> = memo(({
     >
       {/* 1. Drag Handle / Spacer: Ensures items align vertically regardless of draggable state */}
       {dragHandleProps ? (
-        <ListItemIcon sx={{ minWidth: 40, justifyContent: 'center' }}>
+        <ListItemIcon sx={{ justifyContent: 'center', minWidth: 40 }}>
           <DragIndicatorIcon color="action" fontSize="small" />
         </ListItemIcon>
       ) : (
@@ -103,6 +103,9 @@ const ShoppingListItem: React.FC<ShoppingListItemProps> = memo(({
       <Checkbox
         checked={isPurchased}
         onChange={onTogglePurchase}
+        sx={{
+          ml: -1,
+        }}
         inputProps={{
           'aria-label': formatAria(
             isPurchased ? t.aria.unmarkPurchased : t.aria.markPurchased, 
@@ -143,7 +146,8 @@ const ShoppingListItem: React.FC<ShoppingListItemProps> = memo(({
                 whiteSpace: 'pre-wrap',
               }}
             >
-              {item.text}
+              {/* Ensure first letter capitalization for better readability */}
+              {item.text.charAt(0).toUpperCase() + item.text.slice(1)}
             </Typography>
           )
         }
