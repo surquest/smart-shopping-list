@@ -1,4 +1,5 @@
 'use client';
+
 import * as React from 'react';
 import {
     Box,
@@ -13,6 +14,7 @@ import {
     Menu,
     MenuItem,
     Typography,
+    Container
 } from '@mui/material';
 import {
     List,
@@ -25,15 +27,25 @@ import { useTranslation } from '@/i18n/useTranslation';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
-
-
 interface AppLayoutProps {
     children: React.ReactNode;
 }
 
 /**
- * Custom hook to manage MUI Menu state and boilerplate.
- * Reduces repetitive state management for multiple menus.
+ * Navigation Configuration
+ * Centralizing this makes the component cleaner and easier to update.
+ */
+type NavLabelKey = 'lists' | 'products' | 'stores' | 'cards';
+
+const NAV_ITEMS: { labelKey: NavLabelKey; icon: React.JSX.Element; path: string }[] = [
+    { labelKey: 'lists', icon: <List />, path: '/lists' },
+    { labelKey: 'products', icon: <LocalOffer />, path: '/products' },
+    { labelKey: 'stores', icon: <Store />, path: '/stores' },
+    { labelKey: 'cards', icon: <CreditCard />, path: '/cards' },
+];
+
+/**
+ * Custom hook to manage MUI Menu state.
  */
 const useMenu = () => {
     const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
@@ -50,127 +62,117 @@ const useMenu = () => {
     return { anchorEl, isOpen, handleOpen, handleClose };
 };
 
-
 const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
-
     const pathname = usePathname();
-
-    // Determine which tab is active based on the URL path
-    // This handles sub-routes (e.g., /lists/123 still highlights /lists)
-    const getActiveValue = () => {
-        if (pathname.startsWith('/lists')) return '/lists';
-        if (pathname.startsWith('/products')) return '/products';
-        if (pathname.startsWith('/stores')) return '/stores';
-        if (pathname.startsWith('/cards')) return '/cards';
-        return pathname;
-    };
-
-    // Initialize separate menu controllers
+    const { t, language, setLanguage, languages } = useTranslation();
     const langMenu = useMenu();
 
-    const [value, setValue] = React.useState<string>(getActiveValue());
-
-    const { t, language, setLanguage, languages } = useTranslation();
-
-    // Keep BottomNavigation in sync with route changes
-    React.useEffect(() => {
-        setValue(getActiveValue());
+    /**
+     * Memoized active path logic.
+     * Extracts the root segment (e.g., /lists/123 -> /lists) to keep the 
+     * correct navigation tab highlighted.
+     */
+    const activeTab = React.useMemo(() => {
+        const match = NAV_ITEMS.find(item => pathname.startsWith(item.path));
+        return match ? match.path : pathname;
     }, [pathname]);
 
     return (
-        <Box sx={{ pb: 7 }}>
-
-            <AppBar position="sticky" elevation={1} color='default'>
+        <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+            {/* Header Navigation */}
+            <AppBar position="sticky" elevation={1} color="inherit" sx={{ bgcolor: 'background.paper' }}>
                 <Toolbar>
-                    <Box sx={{ flexGrow: 1 }}>
-                        <Typography variant="h1">{t.app?.title ?? ''}</Typography>
-                    </Box>
-
-                    <Stack
-                        direction="row"
-                        justifyContent="space-between"
-                        alignItems="center"
-                        component="header" // Semantic HTML
+                    <Typography 
+                        variant="h6" 
+                        component="h1" 
+                        sx={{ flexGrow: 1, fontWeight: 700 }}
                     >
-                        {/* Language Switcher */}
+                        {t.app?.title ?? 'App'}
+                    </Typography>
+
+                    <Stack direction="row" spacing={1} alignItems="center">
+                        {/* Language Selector */}
                         <IconButton
                             onClick={langMenu.handleOpen}
-                            aria-label={t.aria.changeLanguage}
-                            title={t.aria.changeLanguage}
+                            aria-label={t.aria?.changeLanguage}
+                            size="small"
+                            sx={{ borderRadius: 2, px: 1 }}
                         >
                             <Translate fontSize="small" />
+                            <Typography variant="body2" sx={{ ml: 0.5, fontWeight: 'bold' }}>
+                                {language.toUpperCase()}
+                            </Typography>
                         </IconButton>
 
-                        {/* User Profile */}
-                        <IconButton>
+                        <Menu
+                            anchorEl={langMenu.anchorEl}
+                            open={langMenu.isOpen}
+                            onClose={langMenu.handleClose}
+                            transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+                            anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+                        >
+                            {languages.map((lang) => (
+                                <MenuItem
+                                    key={lang}
+                                    selected={lang === language}
+                                    onClick={() => {
+                                        setLanguage(lang);
+                                        langMenu.handleClose();
+                                    }}
+                                >
+                                    {lang.toUpperCase()}
+                                </MenuItem>
+                            ))}
+                        </Menu>
+
+                        <IconButton size="small">
                             <Avatar sx={{ width: 32, height: 32 }} />
                         </IconButton>
-                        <Stack direction="row" spacing={0.5}>
-                            <Menu
-                                id="language-menu"
-                                anchorEl={langMenu.anchorEl}
-                                open={langMenu.isOpen}
-                                onClose={langMenu.handleClose}
-                            >
-                                {languages.map((lang) => (
-                                    <MenuItem
-                                        key={lang}
-                                        selected={lang === language}
-                                        onClick={() => {
-                                            setLanguage(lang);
-                                            langMenu.handleClose();
-                                        }}
-                                    >
-                                        {lang.toUpperCase()}
-                                    </MenuItem>
-                                ))}
-                            </Menu>
-                        </Stack>
-
                     </Stack>
                 </Toolbar>
             </AppBar>
 
-            <Box component="main" sx={{ p: { xs: 0, sm: 2 } }}>
-                {children}
+            {/* Main Content Area */}
+            <Box 
+                component="main" 
+                sx={{ 
+                    flexGrow: 1, 
+                    pb: { xs: 10, sm: 4 }, // Padding bottom for Mobile Nav
+                    pt: 2 
+                }}
+            >
+                <Container maxWidth="lg">
+                    {children}
+                </Container>
             </Box>
 
+            {/* Bottom Navigation for Mobile/Tablet */}
             <Paper
-                sx={{ position: 'fixed', bottom: 0, left: 0, right: 0 }}
-                elevation={3}
+                sx={{ 
+                    position: 'fixed', 
+                    bottom: 0, 
+                    left: 0, 
+                    right: 0, 
+                    zIndex: 1000,
+                    borderTop: 1,
+                    borderColor: 'divider'
+                }}
+                elevation={0}
             >
                 <BottomNavigation
                     showLabels
-                    value={getActiveValue()}
+                    value={activeTab}
                 >
-                    <BottomNavigationAction
-                        label={t.nav.lists}
-                        icon={<List />}
-                        value="/lists"
-                        component={Link}
-                        href="/lists"
-                    />
-                    <BottomNavigationAction
-                        label={t.nav.products}
-                        icon={<LocalOffer />}
-                        value="/products"
-                        component={Link}
-                        href="/products"
-                    />
-                    <BottomNavigationAction
-                        label={t.nav.stores}
-                        icon={<Store />}
-                        value="/stores"
-                        component={Link}
-                        href="/stores"
-                    />
-                    <BottomNavigationAction
-                        label={t.nav.cards}
-                        icon={<CreditCard />}
-                        value="/cards"
-                        component={Link}
-                        href="/cards"
-                    />
+                    {NAV_ITEMS.map((item) => (
+                        <BottomNavigationAction
+                            key={item.path}
+                            label={t.nav[item.labelKey]}
+                            icon={item.icon}
+                            value={item.path}
+                            component={Link}
+                            href={item.path}
+                        />
+                    ))}
                 </BottomNavigation>
             </Paper>
         </Box>
