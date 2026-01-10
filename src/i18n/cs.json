@@ -36,6 +36,11 @@
   "feedback": {
     "linkCopied": "Odkaz zkopírován do schránky, nyní jej můžete sdílet!"
   },
+  "voice": {
+    "start": "Spuštěn hlasový vstup",
+    "stop": "Zastavit hlasový vstup",
+    "listening": "Poslouchám..."
+  },
   "aria": {
     "changeLanguage": "Změnit jazyk",
     "openActions": "Otevřít nabídku akcí",

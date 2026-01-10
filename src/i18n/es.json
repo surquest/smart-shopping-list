@@ -37,6 +37,12 @@
     "linkCopied": " ¡Enlace copiado al portapapeles, ya puedes compartirlo!"
   }
   ,
+  "voice": {
+    "start": "Iniciar entrada de voz",
+    "stop": "Detener entrada de voz",
+    "listening": "Escuchando..."
+  }
+  ,
   "aria": {
     "changeLanguage": "Cambiar idioma",
     "openActions": "Abrir menú de acciones",

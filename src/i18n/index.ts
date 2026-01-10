@@ -1,4 +1,4 @@
-import en from './en.json';
+import en from './en-US.json';
 import es from './es.json';
 import cs from './cs.json';
 import de from './de.json';

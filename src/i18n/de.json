@@ -36,6 +36,11 @@
   "feedback": {
     "linkCopied": "Link in die Zwischenablage kopiert, du kannst ihn jetzt teilen!"
   },
+  "voice": {
+    "start": "Sprachaufnahme starten",
+    "stop": "Sprachaufnahme stoppen",
+    "listening": "Zuhören..."
+  },
   "aria": {
     "changeLanguage": "Sprache ändern",
     "openActions": "Aktionsmenü öffnen",

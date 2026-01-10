@@ -37,6 +37,12 @@
     "linkCopied": "Link copied to clipboard, you can share it now!"
   }
   ,
+  "voice": {
+    "start": "Start voice input",
+    "stop": "Stop voice input",
+    "listening": "Listening..."
+  }
+  ,
   "aria": {
     "changeLanguage": "Change language",
     "openActions": "Open actions menu",
