@@ -1,4 +1,7 @@
 {
+  "app": {
+    "title": "Nejkup.to"
+  },
   "header": {
     "title": "Einkaufsliste"
   },
@@ -50,5 +53,11 @@
     "unmarkPurchased": "Gekauftes {item} abwählen",
     "markPurchased": "{item} als gekauft markieren",
     "dragHandle": "{item} ziehen"
+  },
+  "nav": {
+    "lists": "Listen",
+    "products": "Produkte",
+    "stores": "Geschäfte",
+    "cards": "Karten"
   }
 }

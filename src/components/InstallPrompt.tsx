@@ -1,20 +1,26 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Button, Dialog, DialogTitle, DialogContent, Typography, Box } from '@mui/material';
+import { Button, Dialog, DialogTitle, DialogContent, Typography, Box, Fab } from '@mui/material';
 import DownloadIcon from '@mui/icons-material/Download';
 import IosShareIcon from '@mui/icons-material/IosShare';
+import { useTranslation } from '@/i18n/useTranslation';
 
 export default function InstallPrompt() {
+  const [isMounted, setIsMounted] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [isStandalone, setIsStandalone] = useState(false);
   const [isIos, setIsIos] = useState(false);
   const [showIosInstructions, setShowIosInstructions] = useState(false);
+  const { t, language, setLanguage } = useTranslation();
 
   useEffect(() => {
+    // Mark component as mounted to prevent hydration mismatch
+    setIsMounted(true);
+
     // Check if already in standalone mode
     setIsStandalone(window.matchMedia('(display-mode: standalone)').matches);
-    
+
     // Detect iOS
     const userAgent = window.navigator.userAgent.toLowerCase();
     const isIosDevice = /iphone|ipad|ipod/.test(userAgent);
@@ -57,31 +63,34 @@ export default function InstallPrompt() {
     }
   };
 
+  // Don't render anything until mounted on client to prevent hydration mismatch
+  if (!isMounted) return null;
+
   if (isStandalone) return null;
 
   // Render button if we have a deferred prompt (Android/Desktop) OR if we are on iOS
   if (!deferredPrompt && !isIos) return null;
 
   return (
-    <>
-      <Button
-        variant="contained"
+    <Box sx={{ '& > :not(style)': { m: 1 } }}>
+      <Fab
+        variant="extended"
         color="primary"
-        startIcon={<DownloadIcon />}
         onClick={handleInstallClick}
+        size="small"
+        aria-label="Install"
         sx={{
           position: 'fixed',
-          bottom: 24,
+          bottom: 72,
           right: 24,
-          zIndex: 1000,
-          boxShadow: 3
+          zIndex: 1000
         }}
       >
-        Install
-      </Button>
+        <DownloadIcon />
+      </Fab>
 
-      <Dialog 
-        open={showIosInstructions} 
+      <Dialog
+        open={showIosInstructions}
         onClose={() => setShowIosInstructions(false)}
       >
         <DialogTitle>Install on iOS</DialogTitle>
@@ -98,8 +107,8 @@ export default function InstallPrompt() {
               2. Scroll down and tap <strong>"Add to Home Screen"</strong>
             </Typography>
           </Box>
-        </DialogContent>
-      </Dialog>
-    </>
+        </DialogContent >
+      </Dialog >
+    </Box >
   );
 }

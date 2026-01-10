@@ -1,4 +1,7 @@
 {
+  "app": {
+    "title": "Nejkup.to"
+  },
   "header": {
     "title": "Shopping List"
   },
@@ -35,14 +38,12 @@
   },
   "feedback": {
     "linkCopied": "Link copied to clipboard, you can share it now!"
-  }
-  ,
+  },
   "voice": {
     "start": "Start voice input",
     "stop": "Stop voice input",
     "listening": "Listening..."
-  }
-  ,
+  },
   "aria": {
     "changeLanguage": "Change language",
     "openActions": "Open actions menu",
@@ -52,5 +53,11 @@
     "unmarkPurchased": "Unmark purchased {item}",
     "markPurchased": "Mark {item} as purchased",
     "dragHandle": "Drag {item}"
+  },
+  "nav": {
+    "lists": "Lists",
+    "products": "Products",
+    "stores": "Stores",
+    "cards": "Cards"
   }
 }

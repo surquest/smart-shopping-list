@@ -4,7 +4,10 @@ import { ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import theme from './theme';
 import ServiceWorkerRegistration from '@/components/ShoppingList/ServiceWorkerRegistration';
-import InstallPrompt from '@/components/ShoppingList/InstallPrompt';
+import InstallPrompt from '@/components/InstallPrompt';
+import AppLayout from "@/components/AppLayout/AppLayout";
+import { TranslationProvider } from '@/i18n/TranslationProvider';
+import HtmlLangUpdater from '@/components/HtmlLangUpdater';
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -31,14 +34,22 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html
+      lang="en"
+      suppressHydrationWarning
+    >
       <body>
         <AppRouterCacheProvider>
           <ThemeProvider theme={theme}>
             <CssBaseline />
             <ServiceWorkerRegistration />
-            <InstallPrompt />
-            {children}
+            <TranslationProvider>
+              <HtmlLangUpdater />
+              <AppLayout>
+                {children}
+                <InstallPrompt />
+              </AppLayout>
+            </TranslationProvider>
           </ThemeProvider>
         </AppRouterCacheProvider>
       </body>

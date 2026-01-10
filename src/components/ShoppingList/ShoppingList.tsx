@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import {
-  Box, Paper, Typography, useTheme, useMediaQuery,
+  Box, Paper, Typography, useTheme,
   Snackbar
 } from '@mui/material';
 import { DropResult } from '@hello-pangea/dnd';
 import { generateItemId } from './utils/shoppingListStorage';
 import { useShoppingListItems } from './hooks/useShoppingListItems';
 import ShoppingItem from './types/ShoppingItem.types';
-import { translations, getBrowserLanguage, Language } from '../../i18n';
+import { useTranslation } from '@/i18n/useTranslation';
 
 // Components
 import { ShoppingListHeader } from './ShoppingListHeader';
@@ -25,13 +25,12 @@ import { ClearListDialog } from './ClearListDialog';
 // ----------------------------------------------------------------------
 const ShoppingList: React.FC = () => {
   const theme = useTheme();
-  // Adjust spacing/layout for mobile devices
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
 
   // -- Application State --
   const [isMounted, setIsMounted] = useState(false);
-  const [language, setLanguage] = useState<Language>('en');
-  
+  const { t, language, setLanguage } = useTranslation();
+
   // -- Data State (via Custom Hook) --
   const { items, setItems } = useShoppingListItems(language, isMounted);
 
@@ -54,20 +53,9 @@ const ShoppingList: React.FC = () => {
   const [dialogEditingText, setDialogEditingText] = useState('');
   const [openSnackbar, setOpenSnackbar] = useState(false);
 
-  const t = translations[language];
-
   // -- Initialization --
   useEffect(() => {
     setIsMounted(true);
-    
-    // Determine initial language from URL or Browser
-    const params = new URLSearchParams(window.location.search);
-    const queryLang = params.get('lang');
-    if (queryLang && queryLang in translations) {
-      setLanguage(queryLang as Language);
-    } else {
-      setLanguage(getBrowserLanguage());
-    }
   }, []);
 
   // -- Derived State --
@@ -128,7 +116,7 @@ const ShoppingList: React.FC = () => {
       if (!targetItem) return prev;
 
       const updatedItem = { ...targetItem, isPurchased: !targetItem.isPurchased };
-      
+
       // Filter out the old version of the item
       const remainingItems = prev.filter(item => item.id !== id);
 
@@ -188,9 +176,9 @@ const ShoppingList: React.FC = () => {
   const handleSaveEdit = useCallback(() => {
     if (!editingId) return;
     const trimmed = editingText.trim();
-    
+
     if (trimmed) {
-      setItems(prev => prev.map(item => 
+      setItems(prev => prev.map(item =>
         item.id === editingId ? { ...item, text: trimmed } : item
       ));
     }
@@ -218,7 +206,7 @@ const ShoppingList: React.FC = () => {
 
   const handleConfirmEditDialog = useCallback(() => {
     if (dialogEditingId && dialogEditingText.trim()) {
-      setItems(prev => prev.map(item => 
+      setItems(prev => prev.map(item =>
         item.id === dialogEditingId ? { ...item, text: dialogEditingText.trim() } : item
       ));
     }
@@ -240,29 +228,27 @@ const ShoppingList: React.FC = () => {
 
   // -- Render --
 
-  // Prevent hydration mismatch by waiting for mount
-  if (!isMounted) return null;
+
 
   return (
     <Box
       sx={{
         width: '100%',
         maxWidth: 500,
-        margin: isMobile ? '0 auto' : '2rem auto',
-        p: isMobile ? 1 : 2,
+        margin: { xs: 0, sm: '2rem auto' },
+        p: { xs: 0, sm: 2 },
       }}
     >
       <Paper
-        elevation={isMobile ? 0 : 3}
+        elevation={0}
         sx={{
-          p: isMobile ? 2 : 3,
-          borderRadius: isMobile ? 0 : 2,
-          minHeight: isMobile ? '100vh' : 'auto',
+          p: { xs: 2, sm: 3 },
+          borderRadius: { xs: 0, sm: 2 },
+          minHeight: { xs: 'calc(100vh - 56px - 64px)', sm: 'auto' },
+          boxShadow: { xs: 'none', sm: theme.shadows[3] },
         }}
       >
         <ShoppingListHeader
-          language={language}
-          onLanguageChange={setLanguage}
           onClearAll={() => setOpenClearDialog(true)}
           hasItems={items.length > 0}
           onShareWhatsApp={handleShareWhatsApp}
@@ -277,26 +263,28 @@ const ShoppingList: React.FC = () => {
           placeholder={t.input.placeholder}
           ariaLabel={t.aria.addItem}
           language={language}
-          voiceLabels={{ 
-            start: t.voice.start, 
-            stop: t.voice.stop, 
-            listening: t.voice.listening 
+          voiceLabels={{
+            start: t.voice.start,
+            stop: t.voice.stop,
+            listening: t.voice.listening
           }}
         />
 
-        <ActiveItemsList
-          items={activeItems}
-          onDragEnd={onDragEnd}
-          onTogglePurchase={handleTogglePurchase}
-          onUpdateQuantity={handleUpdateQuantity}
-          onStartEdit={handleStartEdit}
-          editingId={editingId}
-          editingText={editingText}
-          onEditingTextChange={handleEditingTextChange}
-          onSaveEdit={handleSaveEdit}
-          onMenuOpen={handleItemMenuOpen}
-          t={t}
-        />
+        {isMounted && (
+          <ActiveItemsList
+            items={activeItems}
+            onDragEnd={onDragEnd}
+            onTogglePurchase={handleTogglePurchase}
+            onUpdateQuantity={handleUpdateQuantity}
+            onStartEdit={handleStartEdit}
+            editingId={editingId}
+            editingText={editingText}
+            onEditingTextChange={handleEditingTextChange}
+            onSaveEdit={handleSaveEdit}
+            onMenuOpen={handleItemMenuOpen}
+            t={t}
+          />
+        )}
 
         <PurchasedItemsList
           items={purchasedItems}
