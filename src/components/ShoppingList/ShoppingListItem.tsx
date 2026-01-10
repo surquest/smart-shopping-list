@@ -118,7 +118,7 @@ const ShoppingListItem: React.FC<ShoppingListItemProps> = memo(({
           mr: 1,
           overflow: 'hidden',
           textDecoration: isPurchased && !isEditing ? 'line-through' : 'none',
-          color: isPurchased ? 'text.disabled' : 'text.primary',
+          color: 'text.primary',
         }}
         primary={
           isEditing ? (
@@ -174,7 +174,6 @@ const ShoppingListItem: React.FC<ShoppingListItemProps> = memo(({
             <Chip 
               label={item.quantity || 1} 
               size="small" 
-              variant="outlined" 
             />
           )}
         </Box>
