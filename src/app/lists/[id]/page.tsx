@@ -1,8 +1,10 @@
-'use client';
-
 import ShoppingList from '@/components/ShoppingList/ShoppingList';
 
-export default function Home() {
+export function generateStaticParams() {
+  return [{ id: 'my' }];
+}
+
+export default function Page() {
   return (
     <main>
       <ShoppingList />
