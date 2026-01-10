@@ -52,7 +52,8 @@
     "openItemMenu": "Open item menu for {item}",
     "unmarkPurchased": "Unmark purchased {item}",
     "markPurchased": "Mark {item} as purchased",
-    "dragHandle": "Drag {item}"
+    "dragHandle": "Drag {item}",
+    "userProfile": "User profile"
   },
   "nav": {
     "lists": "Lists",

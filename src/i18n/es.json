@@ -52,7 +52,8 @@
     "openItemMenu": "Abrir menú del artículo {item}",
     "unmarkPurchased": "Desmarcar {item} comprado",
     "markPurchased": "Marcar {item} como comprado",
-    "dragHandle": "Arrastrar {item}"
+    "dragHandle": "Arrastrar {item}",
+    "userProfile": "Perfil de usuario"
   },
   "nav": {
     "lists": "Listas",

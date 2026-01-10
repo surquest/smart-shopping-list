@@ -52,7 +52,8 @@
     "openItemMenu": "Otevřít nabídku položky {item}",
     "unmarkPurchased": "Odznačit zakoupené {item}",
     "markPurchased": "Označit {item} jako zakoupené",
-    "dragHandle": "Přetáhnout položku {item}"
+    "dragHandle": "Přetáhnout položku {item}",
+    "userProfile": "Uživatelský profil"
   },
   "nav": {
     "lists": "Seznamy",

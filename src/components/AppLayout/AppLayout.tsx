@@ -83,7 +83,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
             <AppBar position="sticky" elevation={1} color="inherit" sx={{ bgcolor: 'background.paper' }}>
                 <Toolbar>
                     <Typography 
-                        variant="h6" 
+                        variant="h1" 
                         component="h1" 
                         sx={{ flexGrow: 1, fontWeight: 700 }}
                     >
@@ -125,7 +125,10 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
                             ))}
                         </Menu>
 
-                        <IconButton size="small">
+                        <IconButton 
+                            size="small"
+                            aria-label={t.aria?.userProfile}
+                                >
                             <Avatar sx={{ width: 32, height: 32 }} />
                         </IconButton>
                     </Stack>

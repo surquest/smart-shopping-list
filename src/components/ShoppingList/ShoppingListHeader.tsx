@@ -79,7 +79,7 @@ export const ShoppingListHeader: React.FC<ShoppingListHeaderProps> = ({
       mb={2}
       component="header" // Semantic HTML
     >
-      <Typography variant="h5" fontWeight="bold">
+      <Typography variant="h2" fontWeight="bold">
         {t.header.title}
       </Typography>
       

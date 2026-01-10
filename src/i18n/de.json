@@ -52,7 +52,8 @@
     "openItemMenu": "Menü für {item} öffnen",
     "unmarkPurchased": "Gekauftes {item} abwählen",
     "markPurchased": "{item} als gekauft markieren",
-    "dragHandle": "{item} ziehen"
+    "dragHandle": "{item} ziehen",
+    "userProfile": "Benutzerprofil"
   },
   "nav": {
     "lists": "Listen",
