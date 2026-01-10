@@ -24,10 +24,17 @@ import {
 } from '@mui/icons-material';
 import { useTranslation } from '@/i18n/useTranslation';
 import { useRouter, usePathname } from 'next/navigation';
+import useScrollTrigger from '@mui/material/useScrollTrigger';
+import Slide from '@mui/material/Slide';
+import CssBaseline from '@mui/material/CssBaseline';
+
+
+
 
 interface AppLayoutProps {
     children: React.ReactNode;
 }
+
 /**
  * Custom hook to manage MUI Menu state and boilerplate.
  * Reduces repetitive state management for multiple menus.
@@ -66,10 +73,11 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
 
     return (
         <Box sx={{ pb: 7 }}>
+
             <AppBar position="sticky" elevation={1} color="inherit">
                 <Toolbar>
                     <Box sx={{ flexGrow: 1 }}>
-                        <Typography variant="h1">{t.app.title}</Typography>
+                        <Typography variant="h1">{t.app?.title ?? ''}</Typography>
                     </Box>
 
                     <Stack
