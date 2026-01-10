@@ -1,10 +1,4 @@
-export interface ShoppingItem {
-  id: string;           // Unique client-side identifier
-  text: string;         // Item label
-  isPurchased: boolean; // Purchase status
-  quantity: number;     // Item quantity
-}
-
+import ShoppingItem from "../types/ShoppingItem.types";
 /**
  * Compact representation stored in URL:
  * [purchasedFlag, text, quantity]
@@ -74,7 +68,7 @@ export const decodeItemsFromUrl = (raw: string): ShoppingItem[] => {
 
     return parsed.map(([flag, text, qty]) => ({
       id: generateItemId(),
-      text,
+      text: text,
       isPurchased: flag === 1,
       quantity: qty || 1,
     }));

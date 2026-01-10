@@ -3,8 +3,8 @@ import { AppRouterCacheProvider } from '@mui/material-nextjs/v14-appRouter';
 import { ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import theme from './theme';
-import ServiceWorkerRegistration from '@/components/ServiceWorkerRegistration';
-import InstallPrompt from '@/components/InstallPrompt';
+import ServiceWorkerRegistration from '@/components/ShoppingList/ServiceWorkerRegistration';
+import InstallPrompt from '@/components/ShoppingList/InstallPrompt';
 import "./globals.css";
 
 export const metadata: Metadata = {

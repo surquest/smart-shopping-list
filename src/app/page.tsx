@@ -1,6 +1,6 @@
 'use client';
 
-import ShoppingList from '@/components/ShoppingList';
+import ShoppingList from '@/components/ShoppingList/ShoppingList';
 
 export default function Home() {
   return (
