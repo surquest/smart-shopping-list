@@ -8,6 +8,7 @@ import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import ShoppingItem from './types/ShoppingItem.types';
+import { Translation } from '../../i18n';
 
 /**
  * Props for the ShoppingListItem component.
@@ -27,7 +28,7 @@ interface ShoppingListItemProps {
   /** Triggered when the vertical menu icon is clicked */
   onMenuOpen: (e: React.MouseEvent<HTMLElement>) => void;
   /** Translation object for localized strings and ARIA labels */
-  t: any; 
+  t: Translation; 
   /** Props provided by react-beautiful-dnd or similar library */
   dragHandleProps?: any;
   innerRef?: React.Ref<HTMLLIElement>;

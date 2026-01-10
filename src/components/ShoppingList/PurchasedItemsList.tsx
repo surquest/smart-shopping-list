@@ -2,6 +2,7 @@ import React, { useMemo } from 'react';
 import { Box, List, Typography } from '@mui/material';
 import ShoppingItem from './types/ShoppingItem.types';
 import ShoppingListItem from './ShoppingListItem';
+import { Translation } from '../../i18n';
 
 /**
  * Props for the PurchasedItemsList component.
@@ -17,7 +18,7 @@ interface PurchasedItemsListProps {
   onSaveEdit: () => void;
   onMenuOpen: (event: React.MouseEvent<HTMLElement>, id: string) => void;
   /** Translation object - ideally should be typed according to your i18n schema */
-  t: any; 
+  t: Translation; 
 }
 
 /**

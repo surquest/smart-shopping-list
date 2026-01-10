@@ -2,12 +2,13 @@ import React from 'react';
 import {
   Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Button
 } from '@mui/material';
+import { Translation } from '../../i18n';
 
 interface ClearListDialogProps {
   open: boolean;
   onClose: () => void;
   onConfirm: () => void;
-  t: any;
+  t: Translation;
 }
 
 export const ClearListDialog: React.FC<ClearListDialogProps> = ({

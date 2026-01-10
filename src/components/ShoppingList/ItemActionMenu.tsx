@@ -2,13 +2,14 @@ import React from 'react';
 import { Menu, MenuItem, ListItemIcon, ListItemText } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
+import { Translation } from '../../i18n';
 
 interface ItemActionMenuProps {
   anchorEl: HTMLElement | null;
   onClose: () => void;
   onEdit: () => void;
   onDelete: () => void;
-  t: any;
+  t: Translation;
 }
 
 export const ItemActionMenu: React.FC<ItemActionMenuProps> = ({

@@ -12,6 +12,7 @@ export const translations = {
 
 export type Language = keyof typeof translations;
 export type TranslationKey = keyof typeof translations['en'];
+export type Translation = typeof translations['en'];
 
 export function getBrowserLanguage(): Language {
   if (typeof window === 'undefined') return 'en';

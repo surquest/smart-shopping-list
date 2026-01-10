@@ -12,11 +12,7 @@ import {
 import ShoppingItem from "./types/ShoppingItem.types";
 import ShoppingListItem from './ShoppingListItem';
 
-/**
- * Type definition for the Translation function (assuming i18next or similar).
- * Replacing 'any' with a concrete signature improves type safety.
- */
-type TranslateFunction = (key: string, options?: Record<string, any>) => string;
+import { Translation } from '../../i18n';
 
 interface ActiveItemsListProps {
   /** Array of shopping items to display */
@@ -35,7 +31,7 @@ interface ActiveItemsListProps {
   /** Context menu handler */
   onMenuOpen: (event: React.MouseEvent<HTMLElement>, id: string) => void;
   /** Internationalization function */
-  t: TranslateFunction;
+  t: Translation;
 }
 
 /**

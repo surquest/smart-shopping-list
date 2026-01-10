@@ -4,13 +4,8 @@ import {
   Snackbar
 } from '@mui/material';
 import { DropResult } from '@hello-pangea/dnd';
-import {
-  generateItemId,
-  encodeItemsForUrl,
-  decodeItemsFromUrl,
-  saveToIndexedDB,
-  loadFromIndexedDB,
-} from './utils/shoppingListStorage';
+import { generateItemId } from './utils/shoppingListStorage';
+import { useShoppingListItems } from './hooks/useShoppingListItems';
 import ShoppingItem from './types/ShoppingItem.types';
 import { translations, getBrowserLanguage, Language } from '../../i18n';
 
@@ -23,72 +18,7 @@ import { ItemActionMenu } from './ItemActionMenu';
 import { EditItemDialog } from './EditItemDialog';
 import { ClearListDialog } from './ClearListDialog';
 
-// ----------------------------------------------------------------------
-// Custom Hook: Handles Data Logic & Persistence
-// ----------------------------------------------------------------------
-/**
- * Manages the shopping list state, including initialization from URL/DB
- * and syncing changes back to storage.
- */
-const useShoppingListItems = (language: Language, isMounted: boolean) => {
-  const [items, setItems] = useState<ShoppingItem[]>([]);
 
-  // -- Initialization --
-  useEffect(() => {
-    if (!isMounted) return;
-
-    const initData = async () => {
-      const params = new URLSearchParams(window.location.search);
-      const encodedData = params.get('data');
-
-      // Priority 1: URL Data (User opened a shared link)
-      if (encodedData) {
-        const urlItems = decodeItemsFromUrl(encodedData);
-        setItems(urlItems);
-        // Immediately sync URL data to local DB to cache it
-        await saveToIndexedDB(urlItems);
-      } else {
-        // Priority 2: Local Storage (User returning to the app)
-        const dbItems = await loadFromIndexedDB();
-        if (dbItems && dbItems.length > 0) {
-          setItems(dbItems);
-        }
-      }
-    };
-    initData();
-  }, [isMounted]);
-
-  // -- Persistence (Debounced) --
-  useEffect(() => {
-    if (!isMounted) return;
-
-    // We debounce the save operation to avoid lag during rapid typing/interaction
-    const timeoutId = setTimeout(() => {
-      const url = new URL(window.location.href);
-
-      // 1. Update URL Params
-      if (items.length === 0) {
-        url.searchParams.delete('data');
-      } else {
-        const encodedData = encodeItemsForUrl(items);
-        if (encodedData) url.searchParams.set('data', encodedData);
-      }
-      
-      // Maintain language preference in URL
-      url.searchParams.set('lang', language);
-      
-      // Update browser history without a page reload
-      window.history.replaceState({}, '', url.toString());
-
-      // 2. Sync to IndexedDB
-      saveToIndexedDB(items);
-    }, 500);
-
-    return () => clearTimeout(timeoutId);
-  }, [items, language, isMounted]);
-
-  return { items, setItems };
-};
 
 // ----------------------------------------------------------------------
 // Main Component
@@ -148,7 +78,7 @@ const ShoppingList: React.FC = () => {
   // -- Handlers: Item Management --
 
   /** Adds a new item to the top of the active list */
-  const handleAddItem = (e: React.FormEvent) => {
+  const handleAddItem = useCallback((e: React.FormEvent) => {
     e.preventDefault();
     const cleanText = newItemText.trim();
     if (!cleanText) return;
@@ -166,12 +96,12 @@ const ShoppingList: React.FC = () => {
 
     // Re-focus input for rapid entry
     requestAnimationFrame(() => newItemInputRef.current?.focus());
-  };
+  }, [newItemText, setItems]);
 
   /** * Handles Drag & Drop reordering logic.
    * Note: Only active items are draggable in this UI.
    */
-  const onDragEnd = (result: DropResult) => {
+  const onDragEnd = useCallback((result: DropResult) => {
     const { destination, source } = result;
     if (!destination) return; // Dropped outside the list
     if (destination.index === source.index) return; // Dropped in same place
@@ -189,7 +119,7 @@ const ShoppingList: React.FC = () => {
       // 3. Recombine (Active items always stay above Purchased items)
       return [...reorderedActive, ...purchased];
     });
-  };
+  }, [setItems]);
 
   /** Toggles the purchased status and moves the item between lists */
   const handleTogglePurchase = useCallback((id: string) => {
@@ -216,35 +146,46 @@ const ShoppingList: React.FC = () => {
   }, [setItems]);
 
   /** Increments or decrements item quantity (min 1) */
-  const handleUpdateQuantity = (id: string, delta: number) => {
+  const handleUpdateQuantity = useCallback((id: string, delta: number) => {
     setItems(prev => prev.map(item => {
       if (item.id !== id) return item;
       return { ...item, quantity: Math.max(1, (item.quantity || 1) + delta) };
     }));
-  };
+  }, [setItems]);
+
+  /** Menus & Dialogs helpers */
+  const handleItemMenuClose = useCallback(() => {
+    setItemMenuAnchorEl(null);
+    setItemMenuId(null);
+  }, []);
 
   /** Delete item via Menu */
-  const handleDeleteItem = () => {
+  const handleDeleteItem = useCallback(() => {
     if (itemMenuId) {
       setItems(prev => prev.filter(i => i.id !== itemMenuId));
     }
     handleItemMenuClose();
-  };
+  }, [itemMenuId, setItems, handleItemMenuClose]);
+
 
   /** Clear all items (Active & Purchased) */
-  const confirmClearAll = () => {
+  const confirmClearAll = useCallback(() => {
     setItems([]);
     setOpenClearDialog(false);
-  };
+  }, [setItems]);
 
   // -- Handlers: Editing --
 
-  const handleStartEdit = (item: ShoppingItem) => {
+  const handleStartEdit = useCallback((item: ShoppingItem) => {
     setEditingId(item.id);
     setEditingText(item.text);
-  };
+  }, []);
 
-  const handleSaveEdit = () => {
+  const handleEditingTextChange = useCallback((text: string) => {
+    setEditingText(text);
+  }, []);
+
+  const handleSaveEdit = useCallback(() => {
     if (!editingId) return;
     const trimmed = editingText.trim();
     
@@ -255,21 +196,16 @@ const ShoppingList: React.FC = () => {
     }
     setEditingId(null);
     setEditingText('');
-  };
+  }, [editingId, editingText, setItems]);
 
   // -- Handlers: Menus & Dialogs --
 
-  const handleItemMenuOpen = (event: React.MouseEvent<HTMLElement>, id: string) => {
+  const handleItemMenuOpen = useCallback((event: React.MouseEvent<HTMLElement>, id: string) => {
     setItemMenuAnchorEl(event.currentTarget);
     setItemMenuId(id);
-  };
+  }, []);
 
-  const handleItemMenuClose = () => {
-    setItemMenuAnchorEl(null);
-    setItemMenuId(null);
-  };
-
-  const handleOpenEditDialog = () => {
+  const handleOpenEditDialog = useCallback(() => {
     const item = items.find(i => i.id === itemMenuId);
     if (item) {
       setDialogEditingId(item.id);
@@ -277,9 +213,10 @@ const ShoppingList: React.FC = () => {
       setOpenEditDialog(true);
     }
     handleItemMenuClose();
-  };
+  }, [items, itemMenuId, handleItemMenuClose]);
 
-  const handleConfirmEditDialog = () => {
+
+  const handleConfirmEditDialog = useCallback(() => {
     if (dialogEditingId && dialogEditingText.trim()) {
       setItems(prev => prev.map(item => 
         item.id === dialogEditingId ? { ...item, text: dialogEditingText.trim() } : item
@@ -287,19 +224,19 @@ const ShoppingList: React.FC = () => {
     }
     setOpenEditDialog(false);
     setDialogEditingId(null);
-  };
+  }, [dialogEditingId, dialogEditingText, setItems]);
 
   // -- Handlers: Sharing --
 
-  const handleShareWhatsApp = () => {
+  const handleShareWhatsApp = useCallback(() => {
     const text = `${t.share.text}${window.location.href}`;
     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
-  };
+  }, [t.share.text]);
 
-  const handleCopyLink = () => {
+  const handleCopyLink = useCallback(() => {
     navigator.clipboard.writeText(window.location.href);
     setOpenSnackbar(true);
-  };
+  }, []);
 
   // -- Render --
 
@@ -355,7 +292,7 @@ const ShoppingList: React.FC = () => {
           onStartEdit={handleStartEdit}
           editingId={editingId}
           editingText={editingText}
-          onEditingTextChange={setEditingText}
+          onEditingTextChange={handleEditingTextChange}
           onSaveEdit={handleSaveEdit}
           onMenuOpen={handleItemMenuOpen}
           t={t}
@@ -367,7 +304,7 @@ const ShoppingList: React.FC = () => {
           onStartEdit={handleStartEdit}
           editingId={editingId}
           editingText={editingText}
-          onEditingTextChange={setEditingText}
+          onEditingTextChange={handleEditingTextChange}
           onSaveEdit={handleSaveEdit}
           onMenuOpen={handleItemMenuOpen}
           t={t}

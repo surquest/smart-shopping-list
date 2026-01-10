@@ -2,6 +2,7 @@ import React from 'react';
 import {
   Dialog, DialogTitle, DialogContent, TextField, DialogActions, Button
 } from '@mui/material';
+import { Translation } from '../../i18n';
 
 interface EditItemDialogProps {
   open: boolean;
@@ -9,7 +10,7 @@ interface EditItemDialogProps {
   onTextChange: (text: string) => void;
   onClose: () => void;
   onConfirm: () => void;
-  t: any;
+  t: Translation;
 }
 
 export const EditItemDialog: React.FC<EditItemDialogProps> = ({
