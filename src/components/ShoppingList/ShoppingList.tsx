@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import {
   Box, Paper, Typography, useTheme, useMediaQuery,
-  Snackbar, SnackbarCloseReason
+  Snackbar
 } from '@mui/material';
 import { DropResult } from '@hello-pangea/dnd';
 import {
@@ -23,256 +23,242 @@ import { ItemActionMenu } from './ItemActionMenu';
 import { EditItemDialog } from './EditItemDialog';
 import { ClearListDialog } from './ClearListDialog';
 
-const ShoppingList: React.FC = () => {
-  const theme = useTheme();
-
-  // Used to adjust spacing, shadows, and layout for mobile UX
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-
-  /** Full ordered list (active items first, purchased last) */
+// ----------------------------------------------------------------------
+// Custom Hook: Handles Data Logic & Persistence
+// ----------------------------------------------------------------------
+/**
+ * Manages the shopping list state, including initialization from URL/DB
+ * and syncing changes back to storage.
+ */
+const useShoppingListItems = (language: Language, isMounted: boolean) => {
   const [items, setItems] = useState<ShoppingItem[]>([]);
 
-  /** Controlled input value for new item */
-  const [newItemText, setNewItemText] = useState('');
-  /** Ref to the new-item input so we can focus it programmatically */
-  const newItemInputRef = useRef<HTMLInputElement>(null!);
-
-  /** Edit mode state (inline editing) */
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [editingText, setEditingText] = useState('');
-
-  /** Item Menu state */
-  const [itemMenuAnchorEl, setItemMenuAnchorEl] = useState<null | HTMLElement>(null);
-  const [itemMenuId, setItemMenuId] = useState<string | null>(null);
-
-  /** Dialog open state for clearing the list */
-  const [openClearDialog, setOpenClearDialog] = useState(false);
-  /** Dialog open state for editing an item from the item menu */
-  const [openEditDialog, setOpenEditDialog] = useState(false);
-  const [dialogEditingId, setDialogEditingId] = useState<string | null>(null);
-  const [dialogEditingText, setDialogEditingText] = useState('');
-
-  /** Snackbar open state for copy success */
-  const [openSnackbar, setOpenSnackbar] = useState(false);
-
-  /**
-   * Prevents hydration mismatch:
-   * component only renders once client APIs (window, URL) are available
-   */
-  const [isMounted, setIsMounted] = useState(false);
-  const [language, setLanguage] = useState<Language>('en');
-  const t = translations[language];
-
-  /**
-   * Initial load
-   */
+  // -- Initialization --
   useEffect(() => {
-    setIsMounted(true);
+    if (!isMounted) return;
 
-    const init = async () => {
+    const initData = async () => {
       const params = new URLSearchParams(window.location.search);
-
-      const queryLang = params.get('lang');
-      if (queryLang && queryLang in translations) {
-        setLanguage(queryLang as Language);
-      } else {
-        setLanguage(getBrowserLanguage());
-      }
-
       const encodedData = params.get('data');
 
+      // Priority 1: URL Data (User opened a shared link)
       if (encodedData) {
         const urlItems = decodeItemsFromUrl(encodedData);
         setItems(urlItems);
-        // Sync URL data to IndexedDB priority is given to URL (sharing scenario)
+        // Immediately sync URL data to local DB to cache it
         await saveToIndexedDB(urlItems);
       } else {
-        // Try load from IndexedDB
+        // Priority 2: Local Storage (User returning to the app)
         const dbItems = await loadFromIndexedDB();
         if (dbItems && dbItems.length > 0) {
           setItems(dbItems);
         }
       }
     };
-    init();
-  }, []);
+    initData();
+  }, [isMounted]);
 
-  /**
-   * Persist state to URL and IndexedDB
-   */
+  // -- Persistence (Debounced) --
   useEffect(() => {
     if (!isMounted) return;
 
+    // We debounce the save operation to avoid lag during rapid typing/interaction
     const timeoutId = setTimeout(() => {
       const url = new URL(window.location.href);
 
+      // 1. Update URL Params
       if (items.length === 0) {
         url.searchParams.delete('data');
       } else {
         const encodedData = encodeItemsForUrl(items);
-        if (encodedData) {
-          url.searchParams.set('data', encodedData);
-        }
+        if (encodedData) url.searchParams.set('data', encodedData);
       }
-
-      // Update URL without navigation
+      
+      // Maintain language preference in URL
       url.searchParams.set('lang', language);
+      
+      // Update browser history without a page reload
       window.history.replaceState({}, '', url.toString());
 
-      // Sync to IndexedDB
+      // 2. Sync to IndexedDB
       saveToIndexedDB(items);
     }, 500);
 
     return () => clearTimeout(timeoutId);
   }, [items, language, isMounted]);
 
-  /** Derived list of items not yet purchased */
-  const activeItems = useMemo(
-    () => items.filter(item => !item.isPurchased),
-    [items]
-  );
+  return { items, setItems };
+};
 
-  /** Derived list of purchased items */
-  const purchasedItems = useMemo(
-    () => items.filter(item => item.isPurchased),
-    [items]
-  );
+// ----------------------------------------------------------------------
+// Main Component
+// ----------------------------------------------------------------------
+const ShoppingList: React.FC = () => {
+  const theme = useTheme();
+  // Adjust spacing/layout for mobile devices
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
-  /**
-   * Adds new item to the top of active items
-   */
+  // -- Application State --
+  const [isMounted, setIsMounted] = useState(false);
+  const [language, setLanguage] = useState<Language>('en');
+  
+  // -- Data State (via Custom Hook) --
+  const { items, setItems } = useShoppingListItems(language, isMounted);
+
+  // -- UI Interaction State --
+  const [newItemText, setNewItemText] = useState('');
+  const newItemInputRef = useRef<HTMLInputElement>(null!);
+
+  // Inline Editing State
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingText, setEditingText] = useState('');
+
+  // Item Context Menu State
+  const [itemMenuAnchorEl, setItemMenuAnchorEl] = useState<null | HTMLElement>(null);
+  const [itemMenuId, setItemMenuId] = useState<string | null>(null);
+
+  // Dialogs & Feedback State
+  const [openClearDialog, setOpenClearDialog] = useState(false);
+  const [openEditDialog, setOpenEditDialog] = useState(false);
+  const [dialogEditingId, setDialogEditingId] = useState<string | null>(null);
+  const [dialogEditingText, setDialogEditingText] = useState('');
+  const [openSnackbar, setOpenSnackbar] = useState(false);
+
+  const t = translations[language];
+
+  // -- Initialization --
+  useEffect(() => {
+    setIsMounted(true);
+    
+    // Determine initial language from URL or Browser
+    const params = new URLSearchParams(window.location.search);
+    const queryLang = params.get('lang');
+    if (queryLang && queryLang in translations) {
+      setLanguage(queryLang as Language);
+    } else {
+      setLanguage(getBrowserLanguage());
+    }
+  }, []);
+
+  // -- Derived State --
+  // We use useMemo to prevent recalculating these arrays on every render
+  const activeItems = useMemo(() => items.filter(i => !i.isPurchased), [items]);
+  const purchasedItems = useMemo(() => items.filter(i => i.isPurchased), [items]);
+
+  // -- Handlers: Item Management --
+
+  /** Adds a new item to the top of the active list */
   const handleAddItem = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newItemText.trim()) return;
+    const cleanText = newItemText.trim();
+    if (!cleanText) return;
 
     const newItem: ShoppingItem = {
       id: generateItemId(),
-      text: newItemText.trim(),
+      text: cleanText,
       isPurchased: false,
       quantity: 1,
     };
 
-    setItems(prev => [
-      newItem,
-      ...prev.filter(i => !i.isPurchased),
-      ...prev.filter(i => i.isPurchased),
-    ]);
-
+    // New items go to top, followed by existing active, then purchased
+    setItems(prev => [newItem, ...prev]);
     setNewItemText('');
-    // focus the input again so user can quickly add another item
-    if (typeof requestAnimationFrame !== 'undefined') {
-      requestAnimationFrame(() => newItemInputRef.current?.focus());
-    } else {
-      setTimeout(() => newItemInputRef.current?.focus(), 0);
-    }
+
+    // Re-focus input for rapid entry
+    requestAnimationFrame(() => newItemInputRef.current?.focus());
   };
 
-  /**
-   * Open confirmation dialog to clear entire shopping list
+  /** * Handles Drag & Drop reordering logic.
+   * Note: Only active items are draggable in this UI.
    */
-  const handleClearAll = () => {
-    setOpenClearDialog(true);
+  const onDragEnd = (result: DropResult) => {
+    const { destination, source } = result;
+    if (!destination) return; // Dropped outside the list
+    if (destination.index === source.index) return; // Dropped in same place
+
+    setItems(prev => {
+      // 1. Separate lists
+      const active = prev.filter(item => !item.isPurchased);
+      const purchased = prev.filter(item => item.isPurchased);
+
+      // 2. Reorder the 'active' array specifically
+      const reorderedActive = Array.from(active);
+      const [removed] = reorderedActive.splice(source.index, 1);
+      reorderedActive.splice(destination.index, 0, removed);
+
+      // 3. Recombine (Active items always stay above Purchased items)
+      return [...reorderedActive, ...purchased];
+    });
   };
 
-  /** Confirm and clear all items */
+  /** Toggles the purchased status and moves the item between lists */
+  const handleTogglePurchase = useCallback((id: string) => {
+    setItems(prev => {
+      const targetItem = prev.find(item => item.id === id);
+      if (!targetItem) return prev;
+
+      const updatedItem = { ...targetItem, isPurchased: !targetItem.isPurchased };
+      
+      // Filter out the old version of the item
+      const remainingItems = prev.filter(item => item.id !== id);
+
+      // We explicitly sort: Active Items first, then Purchased Items
+      // This ensures when an item is unchecked, it pops back to the active list
+      const nextActive = remainingItems.filter(i => !i.isPurchased);
+      const nextPurchased = remainingItems.filter(i => i.isPurchased);
+
+      if (updatedItem.isPurchased) {
+        return [...nextActive, ...nextPurchased, updatedItem]; // Add to end of purchased
+      } else {
+        return [updatedItem, ...nextActive, ...nextPurchased]; // Add to top of active
+      }
+    });
+  }, [setItems]);
+
+  /** Increments or decrements item quantity (min 1) */
+  const handleUpdateQuantity = (id: string, delta: number) => {
+    setItems(prev => prev.map(item => {
+      if (item.id !== id) return item;
+      return { ...item, quantity: Math.max(1, (item.quantity || 1) + delta) };
+    }));
+  };
+
+  /** Delete item via Menu */
+  const handleDeleteItem = () => {
+    if (itemMenuId) {
+      setItems(prev => prev.filter(i => i.id !== itemMenuId));
+    }
+    handleItemMenuClose();
+  };
+
+  /** Clear all items (Active & Purchased) */
   const confirmClearAll = () => {
     setItems([]);
     setOpenClearDialog(false);
   };
 
-  /** Handle Snackbar close event */
-  const handleCloseSnackbar = (
-    event: React.SyntheticEvent<any> | Event,
-    reason?: SnackbarCloseReason
-  ) => {
-    if (reason === 'clickaway') {
-      return;
-    }
-    setOpenSnackbar(false);
-  };
+  // -- Handlers: Editing --
 
-  /**
-   * Handles drag-and-drop reordering.
-   */
-  const onDragEnd = (result: DropResult) => {
-    const { destination, source } = result;
-    if (!destination) return;
-
-    setItems(prev => {
-      const active = prev.filter(item => !item.isPurchased);
-      const purchased = prev.filter(item => item.isPurchased);
-
-      const reorderedActive = Array.from(active);
-      const [removed] = reorderedActive.splice(source.index, 1);
-      reorderedActive.splice(destination.index, 0, removed);
-
-      return [...reorderedActive, ...purchased];
-    });
-  };
-
-  /**
-   * Toggles purchase state
-   */
-  const handleTogglePurchase = (id: string) => {
-    setItems(prev => {
-      const target = prev.find(item => item.id === id);
-      if (!target) return prev;
-
-      const remaining = prev.filter(item => item.id !== id);
-      const active = remaining.filter(item => !item.isPurchased);
-      const purchased = remaining.filter(item => item.isPurchased);
-
-      const updated = {
-        ...target,
-        isPurchased: !target.isPurchased,
-      };
-
-      return updated.isPurchased
-        ? [...active, ...purchased, updated]
-        : [updated, ...active, ...purchased];
-    });
-  };
-
-  /**
-   * Updates an item's quantity
-   */
-  const handleUpdateQuantity = (id: string, delta: number) => {
-    setItems(prev =>
-      prev.map(item => {
-        if (item.id !== id) return item;
-        const newQuantity = Math.max(1, (item.quantity || 1) + delta);
-        return { ...item, quantity: newQuantity };
-      })
-    );
-  };
-
-  /**
-   * Start editing an item (inline)
-   */
   const handleStartEdit = (item: ShoppingItem) => {
     setEditingId(item.id);
     setEditingText(item.text);
   };
 
-  /**
-   * Save edited text (inline)
-   */
   const handleSaveEdit = () => {
-    if (editingId) {
-      const trimmed = editingText.trim();
-      if (trimmed) {
-        setItems(prev =>
-          prev.map(item =>
-            item.id === editingId ? { ...item, text: trimmed } : item
-          )
-        );
-      }
-      setEditingId(null);
-      setEditingText('');
+    if (!editingId) return;
+    const trimmed = editingText.trim();
+    
+    if (trimmed) {
+      setItems(prev => prev.map(item => 
+        item.id === editingId ? { ...item, text: trimmed } : item
+      ));
     }
+    setEditingId(null);
+    setEditingText('');
   };
 
-  /** Item Menu Handlers */
+  // -- Handlers: Menus & Dialogs --
+
   const handleItemMenuOpen = (event: React.MouseEvent<HTMLElement>, id: string) => {
     setItemMenuAnchorEl(event.currentTarget);
     setItemMenuId(id);
@@ -283,40 +269,28 @@ const ShoppingList: React.FC = () => {
     setItemMenuId(null);
   };
 
-  const handleDeleteItem = () => {
-    if (itemMenuId) {
-      setItems(prev => prev.filter(i => i.id !== itemMenuId));
+  const handleOpenEditDialog = () => {
+    const item = items.find(i => i.id === itemMenuId);
+    if (item) {
+      setDialogEditingId(item.id);
+      setDialogEditingText(item.text);
+      setOpenEditDialog(true);
     }
     handleItemMenuClose();
-  };
-
-  /** Open edit dialog for item selected in the item menu */
-  const handleOpenEditDialog = () => {
-    if (!itemMenuId) return;
-    const item = items.find(i => i.id === itemMenuId);
-    if (!item) return;
-    setDialogEditingId(item.id);
-    setDialogEditingText(item.text);
-    setOpenEditDialog(true);
-    handleItemMenuClose();
-  };
-
-  const handleCloseEditDialog = () => {
-    setOpenEditDialog(false);
-    setDialogEditingId(null);
-    setDialogEditingText('');
   };
 
   const handleConfirmEditDialog = () => {
-    if (!dialogEditingId) return;
-    const trimmed = dialogEditingText.trim();
-    if (trimmed) {
-      setItems(prev => prev.map(item => item.id === dialogEditingId ? { ...item, text: trimmed } : item));
+    if (dialogEditingId && dialogEditingText.trim()) {
+      setItems(prev => prev.map(item => 
+        item.id === dialogEditingId ? { ...item, text: dialogEditingText.trim() } : item
+      ));
     }
-    handleCloseEditDialog();
+    setOpenEditDialog(false);
+    setDialogEditingId(null);
   };
 
-  /** Share Actions */
+  // -- Handlers: Sharing --
+
   const handleShareWhatsApp = () => {
     const text = `${t.share.text}${window.location.href}`;
     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
@@ -327,7 +301,9 @@ const ShoppingList: React.FC = () => {
     setOpenSnackbar(true);
   };
 
-  // Avoid rendering until client-only APIs are safe
+  // -- Render --
+
+  // Prevent hydration mismatch by waiting for mount
   if (!isMounted) return null;
 
   return (
@@ -350,7 +326,7 @@ const ShoppingList: React.FC = () => {
         <ShoppingListHeader
           language={language}
           onLanguageChange={setLanguage}
-          onClearAll={handleClearAll}
+          onClearAll={() => setOpenClearDialog(true)}
           hasItems={items.length > 0}
           onShareWhatsApp={handleShareWhatsApp}
           onCopyLink={handleCopyLink}
@@ -364,7 +340,11 @@ const ShoppingList: React.FC = () => {
           placeholder={t.input.placeholder}
           ariaLabel={t.aria.addItem}
           language={language}
-          voiceLabels={{ start: t.voice.start, stop: t.voice.stop, listening: t.voice.listening }}
+          voiceLabels={{ 
+            start: t.voice.start, 
+            stop: t.voice.stop, 
+            listening: t.voice.listening 
+          }}
         />
 
         <ActiveItemsList
@@ -393,6 +373,7 @@ const ShoppingList: React.FC = () => {
           t={t}
         />
 
+        {/* Global Menus and Dialogs */}
         <ItemActionMenu
           anchorEl={itemMenuAnchorEl}
           onClose={handleItemMenuClose}
@@ -405,7 +386,7 @@ const ShoppingList: React.FC = () => {
           open={openEditDialog}
           text={dialogEditingText}
           onTextChange={setDialogEditingText}
-          onClose={handleCloseEditDialog}
+          onClose={() => setOpenEditDialog(false)}
           onConfirm={handleConfirmEditDialog}
           t={t}
         />
@@ -420,11 +401,10 @@ const ShoppingList: React.FC = () => {
         <Snackbar
           open={openSnackbar}
           autoHideDuration={5000}
-          onClose={handleCloseSnackbar}
+          onClose={(e, r) => r !== 'clickaway' && setOpenSnackbar(false)}
           message={t.feedback.linkCopied}
         />
 
-        {/* Empty state */}
         {items.length === 0 && (
           <Box textAlign="center" py={8}>
             <Typography color="text.secondary">

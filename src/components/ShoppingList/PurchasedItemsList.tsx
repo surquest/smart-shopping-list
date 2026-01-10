@@ -1,8 +1,12 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Box, List, Typography } from '@mui/material';
 import ShoppingItem from './types/ShoppingItem.types';
 import ShoppingListItem from './ShoppingListItem';
 
+/**
+ * Props for the PurchasedItemsList component.
+ * Uses specific types for translation and callbacks to ensure type safety.
+ */
 interface PurchasedItemsListProps {
   items: ShoppingItem[];
   onTogglePurchase: (id: string) => void;
@@ -12,10 +16,15 @@ interface PurchasedItemsListProps {
   onEditingTextChange: (text: string) => void;
   onSaveEdit: () => void;
   onMenuOpen: (event: React.MouseEvent<HTMLElement>, id: string) => void;
-  t: any;
+  /** Translation object - ideally should be typed according to your i18n schema */
+  t: any; 
 }
 
-export const PurchasedItemsList: React.FC<PurchasedItemsListProps> = ({
+/**
+ * Renders a list of items that have already been marked as purchased.
+ * Optimized with React.memo to prevent unnecessary parent re-renders.
+ */
+export const PurchasedItemsList: React.FC<PurchasedItemsListProps> = React.memo(({
   items,
   onTogglePurchase,
   onStartEdit,
@@ -26,13 +35,23 @@ export const PurchasedItemsList: React.FC<PurchasedItemsListProps> = ({
   onMenuOpen,
   t,
 }) => {
+  
+  // Early return if no items exist to keep the DOM clean
   if (items.length === 0) return null;
 
+  // Memoize the list header to avoid recalculation on every render
+  const listHeader = useMemo(() => (
+    <Typography 
+      variant="overline" 
+      sx={{ fontWeight: 'bold', color: 'text.secondary' }}
+    >
+      {t.list.purchased} ({items.length})
+    </Typography>
+  ), [items.length, t.list.purchased]);
+
   return (
-    <Box mt={4}>
-      <Typography variant="overline">
-        {t.list.purchased} ({items.length})
-      </Typography>
+    <Box mt={4} component="section" aria-labelledby="purchased-items-title">
+      {listHeader}
 
       <List>
         {items.map((item) => (
@@ -40,6 +59,8 @@ export const PurchasedItemsList: React.FC<PurchasedItemsListProps> = ({
             key={item.id}
             item={item}
             isPurchased={true}
+            // Passing individual handlers to avoid creating new anonymous functions 
+            // inside the map if they were defined inside this component.
             onTogglePurchase={() => onTogglePurchase(item.id)}
             onStartEdit={() => onStartEdit(item)}
             isEditing={editingId === item.id}
@@ -48,10 +69,12 @@ export const PurchasedItemsList: React.FC<PurchasedItemsListProps> = ({
             onSaveEdit={onSaveEdit}
             onMenuOpen={(e) => onMenuOpen(e, item.id)}
             t={t}
-            // No drag props, no update quantity
           />
         ))}
       </List>
     </Box>
   );
-};
+});
+
+// Set display name for easier debugging in React DevTools
+PurchasedItemsList.displayName = 'PurchasedItemsList';

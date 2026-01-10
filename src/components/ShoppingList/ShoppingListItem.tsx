@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { memo } from 'react';
 import {
   ListItem, ListItemIcon, IconButton, Checkbox, ListItemText,
-  Stack, Chip, TextField, Typography, useTheme
+  Stack, Chip, TextField, Typography, useTheme, Box
 } from '@mui/material';
 import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
 import AddIcon from '@mui/icons-material/Add';
@@ -9,25 +9,40 @@ import RemoveIcon from '@mui/icons-material/Remove';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import ShoppingItem from './types/ShoppingItem.types';
 
+/**
+ * Props for the ShoppingListItem component.
+ * Includes DND (Drag and Drop) integration and local state management for editing.
+ */
 interface ShoppingListItemProps {
   item: ShoppingItem;
   isPurchased: boolean;
   onTogglePurchase: () => void;
+  /** Optional handler to change quantity. If missing, quantity is read-only. */
   onUpdateQuantity?: (delta: number) => void;
   onStartEdit: () => void;
   isEditing: boolean;
   editingText: string;
   onEditingTextChange: (text: string) => void;
   onSaveEdit: () => void;
+  /** Triggered when the vertical menu icon is clicked */
   onMenuOpen: (e: React.MouseEvent<HTMLElement>) => void;
-  t: any; // Translation object
+  /** Translation object for localized strings and ARIA labels */
+  t: any; 
+  /** Props provided by react-beautiful-dnd or similar library */
   dragHandleProps?: any;
   innerRef?: React.Ref<HTMLLIElement>;
   draggableProps?: any;
   isDragging?: boolean;
 }
 
-const ShoppingListItem: React.FC<ShoppingListItemProps> = ({
+/**
+ * A single row in the shopping list. Supports:
+ * 1. Drag-and-drop sorting
+ * 2. Inline editing on double-click
+ * 3. Quantity management via Chip icons
+ * 4. Strikethrough style for purchased items
+ */
+const ShoppingListItem: React.FC<ShoppingListItemProps> = memo(({
   item,
   isPurchased,
   onTogglePurchase,
@@ -46,6 +61,15 @@ const ShoppingListItem: React.FC<ShoppingListItemProps> = ({
 }) => {
   const theme = useTheme();
 
+  // Helper to safely format ARIA labels
+  const formatAria = (template: string, replacements: Record<string, string | number>) => {
+    let result = template;
+    Object.entries(replacements).forEach(([key, val]) => {
+      result = result.replace(`{${key}}`, String(val));
+    });
+    return result;
+  };
+
   return (
     <ListItem
       ref={innerRef}
@@ -53,60 +77,47 @@ const ShoppingListItem: React.FC<ShoppingListItemProps> = ({
       {...dragHandleProps}
       divider
       sx={{
-        bgcolor: isDragging
-          ? 'background.paper'
-          : 'inherit',
+        bgcolor: isDragging ? 'action.hover' : 'background.paper',
         flexWrap: 'nowrap',
         alignItems: 'center',
         pr: 1,
         pl: 0,
-        // Only show grab cursor if we have drag handle (active items)
+        transition: theme.transitions.create(['background-color', 'box-shadow']),
+        // Visual feedback for draggability
         cursor: dragHandleProps ? 'grab' : 'default',
         '&:active': { cursor: dragHandleProps ? 'grabbing' : 'default' },
         ...draggableProps.style
       }}
     >
-      {/* Drag handle or spacer */}
+      {/* 1. Drag Handle / Spacer: Ensures items align vertically regardless of draggable state */}
       {dragHandleProps ? (
-        <ListItemIcon sx={{ minWidth: 32 }}>
-          <IconButton
-            aria-hidden="true"
-            tabIndex={-1}
-            disableRipple
-          >
-            <DragIndicatorIcon aria-hidden="true" />
-          </IconButton>
+        <ListItemIcon sx={{ minWidth: 40, justifyContent: 'center' }}>
+          <DragIndicatorIcon color="action" fontSize="small" />
         </ListItemIcon>
       ) : (
-        <React.Fragment>
-             {/* Spacer to align with drag handle */}
-             {/* Note: The original code used <Box sx={{ minWidth: 32 }} /> for purchased items */}
-        </React.Fragment>
-      )}
-      
-      {/* For purchased items, we need a spacer if we want alignment, but let's handle that by passing a spacer flag or just checking dragHandleProps is null */}
-      {!dragHandleProps && (
-         <div style={{ minWidth: 32 }} />
+        <Box sx={{ minWidth: 40 }} />
       )}
 
+      {/* 2. Purchase Toggle */}
       <Checkbox
         checked={isPurchased}
         onChange={onTogglePurchase}
-        slotProps={{
-          input: {
-            'aria-label': (isPurchased ? t.aria.unmarkPurchased : t.aria.markPurchased).replace('{item}', item.text)
-          },
+        inputProps={{
+          'aria-label': formatAria(
+            isPurchased ? t.aria.unmarkPurchased : t.aria.markPurchased, 
+            { item: item.text }
+          )
         }}
       />
 
+      {/* 3. Item Text / Edit Field */}
       <ListItemText
         sx={{
           flexGrow: 1,
           mr: 1,
           overflow: 'hidden',
-          ...(isPurchased && !isEditing
-            ? { textDecoration: 'line-through' }
-            : {}),
+          textDecoration: isPurchased && !isEditing ? 'line-through' : 'none',
+          color: isPurchased ? 'text.disabled' : 'text.primary',
         }}
         primary={
           isEditing ? (
@@ -114,9 +125,7 @@ const ShoppingListItem: React.FC<ShoppingListItemProps> = ({
               value={editingText}
               onChange={(e) => onEditingTextChange(e.target.value)}
               onBlur={onSaveEdit}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') onSaveEdit();
-              }}
+              onKeyDown={(e) => e.key === 'Enter' && onSaveEdit()}
               autoFocus
               fullWidth
               variant="standard"
@@ -126,7 +135,6 @@ const ShoppingListItem: React.FC<ShoppingListItemProps> = ({
           ) : (
             <Typography
               variant="body1"
-              component="div"
               onDoubleClick={onStartEdit}
               sx={{
                 cursor: 'text',
@@ -140,65 +148,48 @@ const ShoppingListItem: React.FC<ShoppingListItemProps> = ({
         }
       />
 
-      <Stack
-        direction="row"
-        alignItems="center"
-        flexShrink={0}
-      >
-        <Stack
-          direction="row"
-          alignItems="center"
-          flexShrink={0}
-          sx={{
-            backgroundColor: theme.palette.background.paper,
-            borderRadius: 1
-          }}
-        >
+      {/* 4. Controls: Quantity and Menu */}
+      <Stack direction="row" spacing={1} alignItems="center" flexShrink={0}>
+        <Box sx={{ bgcolor: 'action.selected', borderRadius: 1 }}>
           {onUpdateQuantity ? (
              <Chip
-             label={item.quantity || 1}
-             onClick={() => onUpdateQuantity(1)}
-             onDelete={() => onUpdateQuantity(-1)}
-             icon={<AddIcon aria-hidden="true" />}
-             deleteIcon={<RemoveIcon aria-hidden="true" />}
-             aria-label={
-               t.aria.quantity.replace('{item}', item.text).replace('{count}', String(item.quantity || 1))
-             }
-             sx={{
-               '& .MuiChip-icon': {
-                 color: theme.palette.text.secondary,
-               },
-               '& .MuiChip-deleteIcon': {
-                 color: theme.palette.text.secondary,
-                 opacity: 1,
-                 '&:hover': {
-                   color: theme.palette.text.secondary,
-                   opacity: 1,
+               label={item.quantity || 1}
+               onClick={() => onUpdateQuantity(1)}
+               onDelete={() => onUpdateQuantity(-1)}
+               icon={<AddIcon />}
+               deleteIcon={<RemoveIcon />}
+               aria-label={formatAria(t.aria.quantity, { 
+                 item: item.text, 
+                 count: item.quantity || 1 
+               })}
+               sx={{
+                 '& .MuiChip-icon, & .MuiChip-deleteIcon': {
+                   color: 'text.secondary',
+                   '&:hover': { color: 'primary.main' },
                  },
-               },
-             }}
-           />
+               }}
+             />
           ) : (
-            <Chip
-              label={item.quantity || 1}
-              aria-label={
-                t.aria.quantity.replace('{item}', item.text).replace('{count}', String(item.quantity || 1))
-              }
+            <Chip 
+              label={item.quantity || 1} 
+              size="small" 
+              variant="outlined" 
             />
           )}
-         
-        </Stack>
+        </Box>
+
         <IconButton
+          edge="end"
           onClick={onMenuOpen}
-          aria-label={
-            t.aria.openItemMenu.replace('{item}', item.text)
-          }
+          aria-label={formatAria(t.aria.openItemMenu, { item: item.text })}
         >
           <MoreVertIcon />
         </IconButton>
       </Stack>
     </ListItem>
   );
-};
+});
+
+ShoppingListItem.displayName = 'ShoppingListItem';
 
 export default ShoppingListItem;
