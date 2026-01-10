@@ -1,4 +1,7 @@
 {
+  "app": {
+    "title": "Nejkup.to"
+  },
   "header": {
     "title": "Nákupní seznam"
   },
@@ -50,5 +53,11 @@
     "unmarkPurchased": "Odznačit zakoupené {item}",
     "markPurchased": "Označit {item} jako zakoupené",
     "dragHandle": "Přetáhnout položku {item}"
+  },
+  "nav": {
+    "lists": "Seznamy",
+    "products": "Produkty",
+    "stores": "Obchody",
+    "cards": "Karty"
   }
 }

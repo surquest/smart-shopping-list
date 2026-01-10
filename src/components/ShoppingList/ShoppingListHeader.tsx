@@ -3,17 +3,14 @@ import {
   Stack, Typography, IconButton, Menu, MenuItem, ListItemIcon, ListItemText
 } from '@mui/material';
 import {
-  Language as LanguageIcon,
   MoreVert as MoreVertIcon,
   ClearAll as ClearAllIcon,
   WhatsApp as WhatsAppIcon,
   Share as ShareIcon
 } from '@mui/icons-material';
-import { translations, Language } from '../../i18n';
+import { useTranslation } from '../../i18n/useTranslation';
 
 interface ShoppingListHeaderProps {
-  language: Language;
-  onLanguageChange: (lang: Language) => void;
   onClearAll: () => void;
   hasItems: boolean;
   onShareWhatsApp: () => void;
@@ -40,17 +37,13 @@ const useMenu = () => {
 };
 
 export const ShoppingListHeader: React.FC<ShoppingListHeaderProps> = ({
-  language,
-  onLanguageChange,
   onClearAll,
   hasItems,
   onShareWhatsApp,
   onCopyLink,
 }) => {
-  const t = translations[language];
-  
-  // Initialize separate menu controllers
-  const langMenu = useMenu();
+  const { t } = useTranslation();
+  // Menu controller for actions
   const actionMenu = useMenu();
 
   /**
@@ -91,37 +84,6 @@ export const ShoppingListHeader: React.FC<ShoppingListHeaderProps> = ({
       </Typography>
       
       <Stack direction="row" spacing={0.5}>
-        {/* LANGUAGE SELECTOR */}
-        <IconButton
-          onClick={langMenu.handleOpen}
-          aria-controls={langMenu.isOpen ? 'language-menu' : undefined}
-          aria-haspopup="true"
-          aria-expanded={langMenu.isOpen ? 'true' : undefined}
-          aria-label={t.aria.changeLanguage}
-        >
-          <LanguageIcon />
-        </IconButton>
-        
-        <Menu
-          id="language-menu"
-          anchorEl={langMenu.anchorEl}
-          open={langMenu.isOpen}
-          onClose={langMenu.handleClose}
-        >
-          {(Object.keys(translations) as Language[]).map((lang) => (
-            <MenuItem
-              key={lang}
-              selected={lang === language}
-              onClick={() => {
-                onLanguageChange(lang);
-                langMenu.handleClose();
-              }}
-            >
-              {lang.toUpperCase()}
-            </MenuItem>
-          ))}
-        </Menu>
-
         {/* ACTIONS MENU */}
         <IconButton
           id="action-menu-button"
