@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Stack, TextField, Button } from '@mui/material';
+import { Stack, TextField, Button, Snackbar } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import MicIcon from '@mui/icons-material/Mic';
 
@@ -29,6 +29,7 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
   voiceLabels,
 }) => {
   const [isRecording, setIsRecording] = useState(false);
+  const [snackOpen, setSnackOpen] = useState(false);
   const recognitionRef = useRef<any>(null);
 
   const SpeechRecognitionConstructor =
@@ -73,13 +74,16 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
 
       recog.onerror = () => {
         setIsRecording(false);
+        setSnackOpen(false);
       };
 
       recog.onend = () => {
         setIsRecording(false);
+        setSnackOpen(false);
       };
 
       setIsRecording(true);
+      setSnackOpen(true);
       recog.start();
     } catch (e) {
       // ignore failures silently
@@ -96,6 +100,7 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
       recognitionRef.current = null;
     }
     setIsRecording(false);
+    setSnackOpen(false);
   };
 
   const toggleRecording = () => {
@@ -104,14 +109,15 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
   };
 
   return (
-    <Stack
-      direction="row"
-      spacing={1}
-      component="form"
-      onSubmit={onSubmit}
-      mb={3}
-      alignItems="stretch"
-    >
+    <>
+      <Stack
+        direction="row"
+        spacing={1}
+        component="form"
+        onSubmit={onSubmit}
+        mb={3}
+        alignItems="stretch"
+      >
       <TextField
         fullWidth
         size="small"
@@ -153,6 +159,17 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
           <MicIcon color={isRecording ? 'error' : 'inherit'} />
         </Button>
       )}
-    </Stack>
+      </Stack>
+
+      <Snackbar
+        open={snackOpen}
+        message={voiceLabels?.listening ?? 'Listening...'}
+        action={
+          <Button color="inherit" size="small" onClick={stopRecognition}>
+            {voiceLabels?.stop ?? 'Stop'}
+          </Button>
+        }
+      />
+    </>
   );
 };
